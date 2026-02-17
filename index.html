@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Control de Almacén - Obra Civil</title>
+    <style>
+        :root { --gris-oscuro: #2c3e50; --amarillo-obra: #f39c12; --rojo-alerta: #e74c3c; --blanco: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #ecf0f1; color: var(--gris-oscuro); }
+        header { background: var(--gris-oscuro); color: var(--amarillo-obra); padding: 20px 15px; text-align: center; border-bottom: 5px solid var(--amarillo-obra); }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        .card { background: var(--blanco); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; border-bottom: 2px solid var(--amarillo-obra); padding-bottom: 5px; font-size: 18px; text-transform: uppercase; }
+        
+        .input-full { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
+        
+        /* Filas de Materiales */
+        .fila-material { display: flex; gap: 5px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 10px; border-left: 4px solid var(--amarillo-obra); }
+        .input-mat { flex: 2; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .input-cant { width: 70px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; text-align: center; font-weight: bold; }
+
+        .btn-add { background: var(--gris-oscuro); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+        .btn-enviar { background: var(--amarillo-obra); color: var(--gris-oscuro); border: none; padding: 20px; border-radius: 15px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #d68910; }
+        .btn-enviar:active { transform: translateY(3px); box-shadow: none; }
+        
+        footer { text-align: center; padding: 20px; font-size: 11px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-size: 40px;">🏗️</div>
+    <strong>LOGÍSTICA DE OBRA</strong><br>
+    <small>Control de Salida de Almacén</small>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h3>📋 Datos del Vale</h3>
+        <input type="text" id="responsable" class="input-full" placeholder="👷 Nombre de quien recibe">
+        <input type="text" id="frente" class="input-full" placeholder="📍 Frente de Obra (Ej: Torre 1, Piso 3)">
+        <select id="tipo" class="input-full">
+            <option value="SALIDA">🔴 SALIDA DE MATERIAL</option>
+            <option value="ENTRADA">🟢 ENTRADA / DEVOLUCIÓN</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <h3>📦 Materiales / Herramientas</h3>
+        <div id="lista-materiales">
+            <div class="fila-material">
+                <input type="text" class="input-mat" placeholder="Descripción del material">
+                <input type="text" class="input-cant" placeholder="Cant.">
+            </div>
+        </div>
+        <button class="btn-add" onclick="agregarFila()">+ AGREGAR OTRO ÍTEM</button>
+    </div>
+
+    <button class="btn-enviar" onclick="enviarReporte()">📲 GENERAR VALE DE SALIDA</button>
+</div>
+
+<footer>
+    SISTEMA DE CONTROL DE OBRA <br>
+    <strong>VIBRAS POSITIVAS</strong> © 2026 <br>
+    Innovación para Ingeniería Civil
+</footer>
+
+<script>
+    function agregarFila() {
+        const div = document.createElement('div');
+        div.className = 'fila-material';
+        div.innerHTML = `<input type="text" class="input-mat" placeholder="Descripción"><input type="text" class="input-cant" placeholder="Cant.">`;
+        document.getElementById('lista-materiales').appendChild(div);
+    }
+
+    function enviarReporte() {
+        const resp = document.getElementById('responsable').value.trim();
+        const frente = document.getElementById('frente').value.trim();
+        const tipo = document.getElementById('tipo').value;
+        
+        if(!resp || !frente) return alert("Socio, ponga el responsable y el frente de obra.");
+
+        const filas = document.querySelectorAll('.fila-material');
+        let detalle = "";
+        filas.forEach(f => {
+            const mat = f.querySelector('.input-mat').value;
+            const cant = f.querySelector('.input-cant').value;
+            if(mat) detalle += `• ${mat}: ${cant}\n`;
+        });
+
+        if(!detalle) return alert("No hay materiales registrados.");
+
+        // CAPTURA DE TIEMPO
+        const ahora = new Date();
+        const fecha = ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
+
+        let mensaje = `*🚧 VALE DE ALMACÉN - OBRA*\n`;
+        mensaje += `--------------------------------\n`;
+        mensaje += `📅 *FECHA:* ${fecha}\n`;
+        mensaje += `🔄 *TIPO:* ${tipo}\n`;
+        mensaje += `👷 *RESPONSABLE:* ${resp}\n`;
+        mensaje += `📍 *FRENTE:* ${frente}\n`;
+        mensaje += `--------------------------------\n`;
+        mensaje += `*DETALLE DE MATERIALES:*\n${detalle}`;
+        mensaje += `--------------------------------\n`;
+        mensaje += `_Generado por Vibras Positivas_`;
+
+        // Aquí el ingeniero pondría el WhatsApp del dueño de la obra o de contabilidad
+        const whatsappIng = "3117700431"; 
+        window.location.href = `https://wa.me/57${whatsappIng}?text=${encodeURIComponent(mensaje)}`;
+    }
+</script>
+</body>
+</html>

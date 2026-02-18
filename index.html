@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Operable - Vibras Positivas</title>
+    <title>Auditoría Master - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --azul: #3498db; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --azul: #3498db; --verde: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 60px; }
         header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); }
         .container { padding: 15px; max-width: 650px; margin: auto; }
@@ -20,6 +20,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
         .btn-del { color: var(--rojo); font-weight: bold; cursor: pointer; border: none; background: none; }
+        .btn-edit { color: var(--azul); font-weight: bold; cursor: pointer; border: none; background: none; margin-right: 5px; }
         footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
     </style>
 </head>
@@ -27,14 +28,14 @@
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>LOGÍSTICA OPERABLE</strong>
+    <strong>LOGÍSTICA Y BACKUP SEGURO</strong>
 </header>
 
 <div class="container">
     <div class="tab-bar">
         <button class="tab-btn active" onclick="verTab('movimiento')">REGISTRAR</button>
         <button class="tab-btn" onclick="verTab('inventario')">📦 EXISTENCIAS</button>
-        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL</button>
+        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL / BACKUP</button>
     </div>
 
     <div id="movimiento" class="tab-content">
@@ -55,30 +56,37 @@
             </div>
             <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px; cursor:pointer">+ ITEM</button>
         </div>
-        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR Y ACTUALIZAR</button>
+        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR</button>
     </div>
 
     <div id="inventario" class="tab-content" style="display:none;">
         <div class="card">
             <h3>📦 Inventario Real</h3>
             <table>
-                <thead><tr><th>Producto</th><th>Saldo</th></tr></thead>
+                <thead><tr><th>Producto</th><th>Saldo</th><th>Acción</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
             </table>
-            <button class="btn-main" style="margin-top:15px; background:#27ae60;" onclick="addItemManual()">+ CARGAR SALDO INICIAL</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO PRODUCTO / SALDO</button>
         </div>
     </div>
 
     <div id="informes" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📊 Registros Verificables</h3>
+            <h3>📊 Registros / Excel</h3>
             <div style="overflow-x:auto;">
                 <table id="tabla-logs">
-                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cant.</th><th>Acción</th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Acción</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
             </div>
-            <button class="btn-main" style="margin-top:15px; background:#27ae60;" onclick="exportarExcel()">📥 DESCARGAR EXCEL OPERABLE</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 DESCARGAR EXCEL</button>
+        </div>
+
+        <div class="card">
+            <h3>💾 Sistema de Respaldo (Backup)</h3>
+            <p style="font-size:10px; color:#666;">Use esto para mover sus datos a otro celular.</p>
+            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="exportarBackup()">📤 GENERAR COPIA DE SEGURIDAD</button>
+            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR COPIA</button>
         </div>
     </div>
 </div>
@@ -86,8 +94,8 @@
 <datalist id="lista-productos"></datalist>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('vp_saldos_v3') || "{}");
-    let logs = JSON.parse(localStorage.getItem('vp_logs_v3') || "[]");
+    let inventory = JSON.parse(localStorage.getItem('vp_saldos_v4') || "{}");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_v4') || "[]");
 
     function initApp() {
         actualizarTablas();
@@ -114,21 +122,38 @@
         const dList = document.getElementById('lista-productos');
         cSaldos.innerHTML = ""; dList.innerHTML = "";
         Object.keys(inventory).sort().forEach(art => {
-            cSaldos.innerHTML += `<tr><td>${art}</td><td><strong>${inventory[art]}</strong></td></tr>`;
+            cSaldos.innerHTML += `<tr>
+                <td>${art}</td>
+                <td><strong>${inventory[art]}</strong></td>
+                <td>
+                    <button class="btn-edit" onclick="editarArticulo('${art}')">✏️</button>
+                    <button class="btn-del" onclick="eliminarArticulo('${art}')">🗑️</button>
+                </td>
+            </tr>`;
             dList.innerHTML += `<option value="${art}">`;
         });
 
         const cLogs = document.getElementById('cuerpo-logs');
         cLogs.innerHTML = "";
         logs.forEach((l, index) => {
-            cLogs.innerHTML += `<tr>
-                <td>${l.fecha}</td>
-                <td>${l.tipo}</td>
-                <td>${l.producto}</td>
-                <td>${l.cantidad}</td>
-                <td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td>
-            </tr>`;
+            cLogs.innerHTML += `<tr><td>${l.fecha.split(' ')[0]}</td><td>${l.producto}</td><td>${l.cantidad}</td><td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td></tr>`;
         });
+    }
+
+    function editarArticulo(viejoNombre) {
+        const nuevoNombre = prompt("Editar nombre del producto:", viejoNombre).toUpperCase();
+        const nuevoSaldo = prompt("Editar cantidad actual:", inventory[viejoNombre]);
+        if (nuevoNombre && nuevoNombre !== viejoNombre) {
+            inventory[nuevoNombre] = parseFloat(nuevoSaldo) || 0;
+            delete inventory[viejoNombre];
+        } else {
+            inventory[viejoNombre] = parseFloat(nuevoSaldo) || 0;
+        }
+        save();
+    }
+
+    function eliminarArticulo(art) {
+        if(confirm(`¿Eliminar ${art} y su saldo?`)) { delete inventory[art]; save(); }
     }
 
     function procesarMovimiento() {
@@ -139,27 +164,18 @@
 
         if(!b || !r) return alert("Faltan responsables.");
 
-        let validados = 0;
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
             const art = row.querySelector('.m-art').value.toUpperCase().trim();
             const can = parseFloat(row.querySelector('.m-can').value) || 0;
-            
             if(art && can > 0) {
-                // Actualizar Saldo
                 if(tipo === 'SALIDA' || tipo === 'PRESTAMO') inventory[art] = (inventory[art] || 0) - can;
                 else inventory[art] = (inventory[art] || 0) + can;
-                
-                // Guardar log INDIVIDUAL por producto para Excel
                 logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: art, cantidad: can });
-                validados++;
             }
         });
-
-        if(validados === 0) return alert("Ingrese productos válidos.");
-        
         localStorage.setItem('last_bod', b);
         save();
-        alert("¡Registro Exitoso! Los saldos se han actualizado.");
+        alert("¡Registro Exitoso!");
         location.reload();
     }
 
@@ -169,25 +185,46 @@
         if(art) { inventory[art] = can; save(); }
     }
 
-    function eliminarLog(idx) {
-        if(confirm("¿Borrar registro?")) { logs.splice(idx, 1); save(); }
-    }
-
     function save() {
-        localStorage.setItem('vp_saldos_v3', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs_v3', JSON.stringify(logs));
+        localStorage.setItem('vp_saldos_v4', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_v4', JSON.stringify(logs));
         actualizarTablas();
     }
 
     function exportarExcel() {
-        // Ahora exportamos el array de logs directamente, que ya tiene columnas separadas
         const wsLogs = XLSX.utils.json_to_sheet(logs);
         const wsSaldos = XLSX.utils.json_to_sheet(Object.keys(inventory).map(k => ({Producto: k, Saldo: inventory[k]})));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial_Operable");
-        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias_Actuales");
-        XLSX.writeFile(wb, "Auditoria_VibrasPositivas.xlsx");
+        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial");
+        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias");
+        XLSX.writeFile(wb, "Auditoria_Operable_VP.xlsx");
     }
+
+    // --- FUNCIONES DE BACKUP ---
+    function exportarBackup() {
+        const data = { inventory, logs };
+        const blob = new Blob([JSON.stringify(data)], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Backup_Almacen_VP_${new Date().getTime()}.txt`;
+        a.click();
+        alert("Copia de seguridad descargada. Guárdela bien.");
+    }
+
+    function restaurarBackup() {
+        const json = prompt("Pegue aquí el contenido del archivo de backup:");
+        if (json) {
+            try {
+                const data = JSON.parse(json);
+                inventory = data.inventory;
+                logs = data.logs;
+                save();
+                alert("Datos restaurados con éxito.");
+            } catch (e) { alert("Error: El formato del backup es inválido."); }
+        }
+    }
+
+    function eliminarLog(idx) { if(confirm("¿Borrar registro?")) { logs.splice(idx, 1); save(); } }
 </script>
 </body>
 </html>

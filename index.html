@@ -3,108 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Saldos de Almacén - Vibras Positivas</title>
+    <title>Saldos Pro - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --verde: #27ae60; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --azul: #3498db; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 60px; }
-        header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); position: sticky; top: 0; z-index: 100; }
+        header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); }
         .container { padding: 15px; max-width: 650px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
-        h3 { margin-top: 0; font-size: 13px; text-transform: uppercase; color: #444; display: flex; justify-content: space-between; }
         
-        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
-        
+        /* Tabs */
         .tab-bar { display: flex; background: #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
-        .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
         .tab-btn.active { background: var(--oro); color: var(--negro); }
 
+        /* Formulario */
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
         .item-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
         .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
         
-        /* Tabla de Saldos */
-        .tabla-saldos { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .tabla-saldos th { background: #eee; padding: 8px; text-align: left; }
-        .tabla-saldos td { padding: 8px; border-bottom: 1px solid #eee; }
-        .stock-bajo { color: var(--rojo); font-weight: bold; }
-
-        footer { text-align: center; font-size: 11px; color: #777; padding: 20px; }
+        /* Tablas Dinámicas */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        th { background: #f8f9fa; color: #666; }
+        
+        /* Botones de Acción */
+        .btn-edit { color: var(--azul); font-weight: bold; cursor: pointer; margin-right: 10px; border: none; background: none; }
+        .btn-del { color: var(--rojo); font-weight: bold; cursor: pointer; border: none; background: none; }
+        
+        footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
     </style>
 </head>
 <body onload="initApp()">
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>GESTIÓN DE SALDOS Y AUDITORÍA</strong>
-    <div id="reloj" style="font-size: 11px; margin-top: 5px;"></div>
+    <strong>AUDITORÍA Y SALDOS DINÁMICOS</strong>
 </header>
 
 <div class="container">
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="verTab('movimiento')">MOVIMIENTOS</button>
-        <button class="tab-btn" onclick="verTab('inventario')">📦 SALDOS (EXISTENCIAS)</button>
-        <button class="tab-btn" onclick="verTab('informes')">📊 INFORMES</button>
+        <button class="tab-btn active" onclick="verTab('movimiento')">REGISTRAR</button>
+        <button class="tab-btn" onclick="verTab('inventario')">📦 EXISTENCIAS</button>
+        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL</button>
     </div>
 
     <div id="movimiento" class="tab-content">
         <div class="card">
-            <h3>👷 Personal Responsable</h3>
-            <input type="text" id="bodeguero" placeholder="Quién Entrega (Bodeguero)">
-            <input type="text" id="receptor" placeholder="Quién Recibe (Operario)">
+            <h3>📝 Vale de Movimiento</h3>
+            <input type="text" id="bodeguero" placeholder="Bodeguero (Entrega)">
+            <input type="text" id="receptor" placeholder="Receptor (Recibe)">
             <select id="tipo_mov">
-                <option value="SALIDA">🔴 SALIDA / CONSUMO (Resta)</option>
-                <option value="DEVOLUCION">🟢 DEVOLUCIÓN (Suma)</option>
-                <option value="PRESTAMO">🛠️ PRÉSTAMO HERRAMIENTA</option>
-                <option value="AVERIA">⚠️ AVERÍA / DAÑO</option>
+                <option value="SALIDA">🔴 SALIDA / CONSUMO</option>
+                <option value="DEVOLUCION">🟢 DEVOLUCIÓN / ENTRADA</option>
+                <option value="PRESTAMO">🛠️ PRÉSTAMO</option>
             </select>
-        </div>
-        <div class="card">
-            <h3>📋 Detalles del Vale</h3>
             <div id="lista-mov">
                 <div class="item-row">
                     <input type="text" class="m-art" placeholder="Producto" list="lista-productos">
                     <input type="number" class="m-can" placeholder="Cant.">
                 </div>
             </div>
-            <button onclick="addFilaMov()" style="width:100%; margin-top:5px; border:1px dashed #ccc; padding:5px; cursor:pointer">+ OTRO ITEM</button>
+            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px; cursor:pointer">+ ITEM</button>
         </div>
-        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR Y DESCONTAR</button>
+        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR MOVIMIENTO</button>
     </div>
 
     <div id="inventario" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📥 Carga de Mercancía Inicial</h3>
-            <p style="font-size:11px; color:#666;">Use esta sección para recibir la bodega o cargar saldos nuevos.</p>
-            <div id="lista-inv">
-                <div class="item-row">
-                    <input type="text" class="i-art" placeholder="Producto/Herramienta">
-                    <input type="number" class="i-can" placeholder="Saldo Inicial">
-                </div>
-            </div>
-            <button onclick="addFilaInv()" style="width:100%; margin-top:5px; border:1px dashed #ccc; padding:5px; cursor:pointer">+ CARGAR OTRO</button>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="cargarSaldos()">📥 ACTUALIZAR SALDOS</button>
-        </div>
-
-        <div class="card">
-            <h3>📈 Existencias Actuales</h3>
-            <table class="tabla-saldos">
-                <thead><tr><th>Producto</th><th>Saldo Actual</th></tr></thead>
+            <h3>📦 Inventario Maestro</h3>
+            <p style="font-size:10px; color:gray">Puede editar el saldo directamente si hay descuadre físico.</p>
+            <table>
+                <thead><tr><th>Producto</th><th>Saldo</th><th>Acción</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
             </table>
+            <button class="btn-main" style="margin-top:15px; background:#27ae60;" onclick="addItemManual()">+ NUEVO PRODUCTO</button>
         </div>
     </div>
 
     <div id="informes" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📊 Histórico de Auditoría</h3>
+            <h3>📊 Historial de Auditoría</h3>
             <div style="overflow-x:auto;">
-                <table class="tabla-saldos" id="tabla-logs">
-                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Entregó</th><th>Recibió</th><th>Detalle</th></tr></thead>
+                <table>
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Acción</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
             </div>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 EXPORTAR EXCEL</button>
-            <button class="btn-main" style="margin-top:5px; background:#666; font-size:12px;" onclick="borrarTodo()">🗑️ RESET TOTAL</button>
+            <button class="btn-main" style="margin-top:15px; background:#27ae60;" onclick="exportarExcel()">📥 EXCEL</button>
         </div>
     </div>
 </div>
@@ -112,25 +98,17 @@
 <datalist id="lista-productos"></datalist>
 
 <footer>
-    SISTEMA DE CONTROL DE SALDOS <br>
+    CONTROLES AUDITABLES <br>
     <strong>VIBRAS POSITIVAS</strong> © 2026
 </footer>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('vp_saldos') || "{}");
-    let logs = JSON.parse(localStorage.getItem('vp_logs') || "[]");
+    let inventory = JSON.parse(localStorage.getItem('vp_saldos_pro') || "{}");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_pro') || "[]");
 
     function initApp() {
-        actualizarReloj();
-        setInterval(actualizarReloj, 1000);
-        actualizarVistaSaldos();
-        cargarTablaLogs();
-        if(localStorage.getItem('last_bodeguero')) document.getElementById('bodeguero').value = localStorage.getItem('last_bodeguero');
-    }
-
-    function actualizarReloj() {
-        const opciones = { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' };
-        document.getElementById('reloj').innerText = new Date().toLocaleString('es-CO', opciones);
+        actualizarTablas();
+        if(localStorage.getItem('last_bod')) document.getElementById('bodeguero').value = localStorage.getItem('last_bod');
     }
 
     function verTab(id) {
@@ -138,7 +116,7 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).style.display = 'block';
         event.currentTarget.classList.add('active');
-        if(id === 'inventario') actualizarVistaSaldos();
+        actualizarTablas();
     }
 
     function addFilaMov() {
@@ -148,106 +126,110 @@
         document.getElementById('lista-mov').appendChild(div);
     }
 
-    function addFilaInv() {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `<input type="text" class="i-art" placeholder="Producto"><input type="number" class="i-can" placeholder="Saldo">`;
-        document.getElementById('lista-inv').appendChild(div);
-    }
-
-    // CARGAR SALDOS INICIALES
-    function cargarSaldos() {
-        document.querySelectorAll('#lista-inv .item-row').forEach(row => {
-            const art = row.querySelector('.i-art').value.trim().toUpperCase();
-            const can = parseFloat(row.querySelector('.i-can').value) || 0;
-            if(art) inventory[art] = (inventory[art] || 0) + can;
+    // --- LÓGICA DE INVENTARIO ---
+    function actualizarTablas() {
+        // Saldos
+        const cSaldos = document.getElementById('cuerpo-saldos');
+        const dList = document.getElementById('lista-productos');
+        cSaldos.innerHTML = ""; dList.innerHTML = "";
+        
+        Object.keys(inventory).sort().forEach(art => {
+            cSaldos.innerHTML += `<tr>
+                <td>${art}</td>
+                <td><strong>${inventory[art]}</strong></td>
+                <td>
+                    <button class="btn-edit" onclick="editarSaldo('${art}')">✏️</button>
+                    <button class="btn-del" onclick="eliminarProducto('${art}')">🗑️</button>
+                </td>
+            </tr>`;
+            dList.innerHTML += `<option value="${art}">`;
         });
-        saveData();
-        alert("Saldos actualizados correctamente.");
-        row.querySelectorAll('input').forEach(i => i.value = ""); // Limpiar
+
+        // Logs
+        const cLogs = document.getElementById('cuerpo-logs');
+        cLogs.innerHTML = "";
+        logs.forEach((l, index) => {
+            cLogs.innerHTML += `<tr>
+                <td>${l.fecha.split(',')[0]}</td>
+                <td>${l.tipo}</td>
+                <td>${l.detalle}</td>
+                <td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td>
+            </tr>`;
+        });
     }
 
-    // PROCESAR MOVIMIENTO (Resta o Suma)
+    function editarSaldo(art) {
+        const nuevo = prompt(`Nuevo saldo para ${art}:`, inventory[art]);
+        if(nuevo !== null && !isNaN(nuevo)) {
+            inventory[art] = parseFloat(nuevo);
+            save();
+        }
+    }
+
+    function eliminarProducto(art) {
+        if(confirm(`¿Eliminar ${art} del inventario?`)) {
+            delete inventory[art];
+            save();
+        }
+    }
+
+    function addItemManual() {
+        const art = prompt("Nombre del nuevo producto:").toUpperCase();
+        if(art) {
+            inventory[art] = 0;
+            save();
+        }
+    }
+
+    // --- LÓGICA DE MOVIMIENTOS ---
     function procesarMovimiento() {
         const b = document.getElementById('bodeguero').value;
         const r = document.getElementById('receptor').value;
         const tipo = document.getElementById('tipo_mov').value;
-        const fecha = document.getElementById('reloj').innerText;
+        const fecha = new Date().toLocaleString('es-CO');
 
-        if(!b || !r) return alert("Faltan nombres de bodeguero o receptor.");
+        if(!b || !r) return alert("Faltan responsables.");
 
-        let detalleMsg = "";
         let itemsArr = [];
-
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
-            const art = row.querySelector('.m-art').value.trim().toUpperCase();
+            const art = row.querySelector('.m-art').value.toUpperCase().trim();
             const can = parseFloat(row.querySelector('.m-can').value) || 0;
-
             if(art && can > 0) {
-                // Lógica de Saldos
-                if(tipo === 'SALIDA' || tipo === 'PRESTAMO' || tipo === 'AVERIA') {
-                    inventory[art] = (inventory[art] || 0) - can;
-                } else if(tipo === 'DEVOLUCION') {
-                    inventory[art] = (inventory[art] || 0) + can;
-                }
-                detalleMsg += `• ${art}: ${can}\n`;
+                if(tipo === 'SALIDA' || tipo === 'PRESTAMO') inventory[art] = (inventory[art] || 0) - can;
+                else inventory[art] = (inventory[art] || 0) + can;
                 itemsArr.push(`${art}(${can})`);
             }
         });
 
-        if(itemsArr.length === 0) return alert("No hay artículos válidos.");
+        if(itemsArr.length === 0) return alert("Ingrese al menos un producto.");
 
-        const logEntry = { fecha, tipo, entrego: b, recibio: r, detalle: itemsArr.join(", ") };
-        logs.unshift(logEntry);
-        localStorage.setItem('last_bodeguero', b);
-        saveData();
-
-        const msg = `*🛡️ AUDITORÍA ALMACÉN - VIBRAS POSITIVAS*\n📅 ${fecha}\n📑 MOVIMIENTO: ${tipo}\n📦 ENTREGÓ: ${b}\n👷 RECIBIÓ: ${r}\n---------------------------\n${detalleMsg}---------------------------\n✅ Saldos actualizados en sistema.`;
-        window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
+        logs.unshift({ fecha, tipo, detalle: itemsArr.join(", ") });
+        localStorage.setItem('last_bod', b);
+        save();
+        alert("Registrado exitosamente");
+        location.reload();
     }
 
-    function saveData() {
-        localStorage.setItem('vp_saldos', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs', JSON.stringify(logs));
-        actualizarVistaSaldos();
-    }
-
-    function actualizarVistaSaldos() {
-        const cuerpo = document.getElementById('cuerpo-saldos');
-        const datalist = document.getElementById('lista-productos');
-        cuerpo.innerHTML = "";
-        datalist.innerHTML = "";
-        
-        for (let art in inventory) {
-            const saldo = inventory[art];
-            const clase = saldo <= 0 ? 'stock-bajo' : '';
-            cuerpo.innerHTML += `<tr><td>${art}</td><td class="${clase}">${saldo}</td></tr>`;
-            datalist.innerHTML += `<option value="${art}">`;
+    function eliminarLog(index) {
+        if(confirm("¿Borrar este registro del historial? (No afectará los saldos actuales)")) {
+            logs.splice(index, 1);
+            save();
         }
     }
 
-    function cargarTablaLogs() {
-        const cuerpo = document.getElementById('cuerpo-logs');
-        cuerpo.innerHTML = "";
-        logs.forEach(l => {
-            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.entrego}</td><td>${l.recibio}</td><td>${l.detalle}</td></tr>`;
-        });
+    function save() {
+        localStorage.setItem('vp_saldos_pro', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_pro', JSON.stringify(logs));
+        actualizarTablas();
     }
 
     function exportarExcel() {
-        const wsMov = XLSX.utils.json_to_sheet(logs);
-        const wsSal = XLSX.utils.json_to_sheet(Object.keys(inventory).map(k => ({Producto: k, Saldo: inventory[k]})));
+        const wsLogs = XLSX.utils.json_to_sheet(logs);
+        const wsSaldos = XLSX.utils.json_to_sheet(Object.keys(inventory).map(k => ({Producto: k, Saldo: inventory[k]})));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsMov, "Historial_Movimientos");
-        XLSX.utils.book_append_sheet(wb, wsSal, "Saldos_Actuales");
-        XLSX.writeFile(wb, "Auditoria_Almacen_Completa.xlsx");
-    }
-
-    function borrarTodo() {
-        if(confirm("¿Seguro? Se borrarán todos los saldos e historial.")) {
-            localStorage.clear();
-            location.reload();
-        }
+        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial");
+        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias");
+        XLSX.writeFile(wb, "Auditoria_VibrasPositivas.xlsx");
     }
 </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Master - Vibras Positivas</title>
+    <title>Auditoría Paralela - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
         :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --azul: #3498db; --verde: #27ae60; }
@@ -11,6 +11,10 @@
         header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); }
         .container { padding: 15px; max-width: 650px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
+        
+        /* Alerta de Backup */
+        #alerta-backup { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px solid #ffeeba; font-size: 12px; font-weight: bold; text-align: center; }
+
         .tab-bar { display: flex; background: #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
         .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
         .tab-btn.active { background: var(--oro); color: var(--negro); }
@@ -28,10 +32,15 @@
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>LOGÍSTICA Y CONTROL TOTAL</strong>
+    <strong>LOGÍSTICA AUDITABLE PARALELA</strong>
 </header>
 
 <div class="container">
+    <div id="alerta-backup">
+        ⏳ Toca aquí para enviar el Backup de las 2 horas al Ingeniero.
+        <button onclick="enviarBackupAutomatico()" style="margin-top:5px; background:var(--azul); color:white; border:none; padding:5px; border-radius:5px;">ENVIAR AHORA</button>
+    </div>
+
     <div class="tab-bar">
         <button class="tab-btn active" onclick="verTab('movimiento')">REGISTRAR</button>
         <button class="tab-btn" onclick="verTab('inventario')">📦 EXISTENCIAS</button>
@@ -40,7 +49,7 @@
 
     <div id="movimiento" class="tab-content">
         <div class="card">
-            <h3>📝 Vale de Almacén</h3>
+            <h3>📝 Registro de Bodega</h3>
             <input type="text" id="bodeguero" placeholder="Bodeguero (Entrega)">
             <input type="text" id="receptor" placeholder="Receptor (Recibe)">
             <select id="tipo_mov">
@@ -54,14 +63,14 @@
                     <input type="number" class="m-can" placeholder="Cant.">
                 </div>
             </div>
-            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px; cursor:pointer">+ ITEM</button>
+            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px; cursor:pointer">+ OTRO ÍTEM</button>
         </div>
         <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR</button>
     </div>
 
     <div id="inventario" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📦 Inventario Real</h3>
+            <h3>📦 Inventario en Vivo</h3>
             <table>
                 <thead><tr><th>Producto</th><th>Saldo</th><th>Acción</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
@@ -72,20 +81,20 @@
 
     <div id="informes" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📊 Registros Operables (Excel)</h3>
+            <h3>📊 Historial de Movimientos</h3>
             <div style="overflow-x:auto;">
                 <table>
                     <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Acción</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
             </div>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 DESCARGAR EXCEL</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 EXCEL</button>
         </div>
 
         <div class="card">
-            <h3>💾 Copia de Seguridad (Backup)</h3>
-            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="exportarBackup()">📤 EXPORTAR BACKUP (.TXT)</button>
-            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR BACKUP</button>
+            <h3>💾 Sincronización Manual (Backup)</h3>
+            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="enviarBackupAutomatico()">📤 ENVIAR RESPALDO POR WHATSAPP</button>
+            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR DATOS EN ESTE EQUIPO</button>
         </div>
     </div>
 </div>
@@ -93,13 +102,19 @@
 <datalist id="lista-productos"></datalist>
 
 <script>
-    // Usamos arreglos para evitar problemas de llaves con caracteres especiales
-    let inventory = JSON.parse(localStorage.getItem('vp_inv_v5') || "[]");
-    let logs = JSON.parse(localStorage.getItem('vp_logs_v5') || "[]");
+    let inventory = JSON.parse(localStorage.getItem('vp_inv_v6') || "[]");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_v6') || "[]");
 
     function initApp() {
         actualizarTablas();
         if(localStorage.getItem('last_bod')) document.getElementById('bodeguero').value = localStorage.getItem('last_bod');
+        
+        // Iniciar temporizador de 2 horas (7200000 ms)
+        setInterval(mostrarAlertaBackup, 7200000); 
+    }
+
+    function mostrarAlertaBackup() {
+        document.getElementById('alerta-backup').style.display = 'block';
     }
 
     function verTab(id) {
@@ -121,58 +136,25 @@
         const cSaldos = document.getElementById('cuerpo-saldos');
         const dList = document.getElementById('lista-productos');
         cSaldos.innerHTML = ""; dList.innerHTML = "";
-        
         inventory.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((item, index) => {
-            cSaldos.innerHTML += `<tr>
-                <td>${item.nombre}</td>
-                <td><strong>${item.saldo}</strong></td>
-                <td>
-                    <button class="btn-edit" onclick="editarArticulo(${index})">✏️</button>
-                    <button class="btn-del" onclick="eliminarArticulo(${index})">🗑️</button>
-                </td>
-            </tr>`;
+            cSaldos.innerHTML += `<tr><td>${item.nombre}</td><td><strong>${item.saldo}</strong></td><td><button class="btn-edit" onclick="editarArticulo(${index})">✏️</button></td></tr>`;
             dList.innerHTML += `<option value="${item.nombre}">`;
         });
-
         const cLogs = document.getElementById('cuerpo-logs');
         cLogs.innerHTML = "";
         logs.forEach((l, index) => {
-            cLogs.innerHTML += `<tr>
-                <td>${l.fecha.split(' ')[0]}</td>
-                <td>${l.producto}</td>
-                <td>${l.cantidad}</td>
-                <td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td>
-            </tr>`;
+            cLogs.innerHTML += `<tr><td>${l.fecha.split(' ')[0]}</td><td>${l.producto}</td><td>${l.cantidad}</td><td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td></tr>`;
         });
     }
 
-    // --- CORRECCIÓN DEL LÁPIZ: Edición por índice ---
     function editarArticulo(index) {
-        const item = inventory[index];
-        const nuevoNombre = prompt("Nombre del producto:", item.nombre);
-        if (nuevoNombre === null) return;
-        
-        const nuevoSaldo = prompt("Cantidad actual en bodega:", item.saldo);
-        if (nuevoSaldo === null) return;
-
-        inventory[index].nombre = nuevoNombre.toUpperCase().trim();
-        inventory[index].saldo = parseFloat(nuevoSaldo) || 0;
-        save();
-    }
-
-    function eliminarArticulo(index) {
-        if(confirm(`¿Eliminar ${inventory[index].nombre} permanentemente?`)) {
-            inventory.splice(index, 1);
+        const nuevoNombre = prompt("Nombre:", inventory[index].nombre);
+        const nuevoSaldo = prompt("Saldo:", inventory[index].saldo);
+        if(nuevoNombre && nuevoSaldo) {
+            inventory[index].nombre = nuevoNombre.toUpperCase().trim();
+            inventory[index].saldo = parseFloat(nuevoSaldo) || 0;
             save();
         }
-    }
-
-    function addItemManual() {
-        const nombre = prompt("Nombre del nuevo producto:").toUpperCase().trim();
-        if(!nombre) return;
-        const saldo = parseFloat(prompt("Saldo inicial:", 0)) || 0;
-        inventory.push({ nombre, saldo });
-        save();
     }
 
     function procesarMovimiento() {
@@ -180,75 +162,69 @@
         const r = document.getElementById('receptor').value;
         const tipo = document.getElementById('tipo_mov').value;
         const fecha = new Date().toLocaleString('es-CO');
-
-        if(!b || !r) return alert("Socio, ponga quién entrega y quién recibe.");
+        if(!b || !r) return alert("Indique responsables.");
 
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
             const nombreArt = row.querySelector('.m-art').value.toUpperCase().trim();
             const cant = parseFloat(row.querySelector('.m-can').value) || 0;
-            
             if(nombreArt && cant > 0) {
                 let item = inventory.find(i => i.nombre === nombreArt);
-                if(!item) {
-                    item = { nombre: nombreArt, saldo: 0 };
-                    inventory.push(item);
-                }
-                
+                if(!item) { item = { nombre: nombreArt, saldo: 0 }; inventory.push(item); }
                 if(tipo === 'SALIDA' || tipo === 'PRESTAMO') item.saldo -= cant;
                 else item.saldo += cant;
-                
                 logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: nombreArt, cantidad: cant });
             }
         });
-        localStorage.setItem('last_bod', b);
         save();
-        alert("Registro Exitoso. Saldos actualizados.");
+        alert("Registrado.");
         location.reload();
     }
 
     function save() {
-        localStorage.setItem('vp_inv_v5', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs_v5', JSON.stringify(logs));
+        localStorage.setItem('vp_inv_v6', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_v6', JSON.stringify(logs));
         actualizarTablas();
     }
 
-    function exportarExcel() {
-        const wsLogs = XLSX.utils.json_to_sheet(logs);
-        const wsSaldos = XLSX.utils.json_to_sheet(inventory);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial_Operable");
-        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias_Actuales");
-        XLSX.writeFile(wb, "Auditoria_Almacen_VP.xlsx");
-    }
-
-    // --- SISTEMA DE BACKUP ROBUSTO ---
-    function exportarBackup() {
+    // --- EL CONTROL PARALELO DEL INGENIERO ---
+    function enviarBackupAutomatico() {
         const data = { inv: inventory, hist: logs };
-        const blob = new Blob([JSON.stringify(data)], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Backup_VP_${new Date().getTime()}.txt`;
-        a.click();
-        alert("Copia de seguridad generada. Guárdela en su correo.");
+        const backupString = JSON.stringify(data);
+        
+        // Mensaje para el Ingeniero
+        const msg = `🛡️ *BACKUP AUTOMÁTICO DE SEGURIDAD*\n📅 Fecha: ${new Date().toLocaleString()}\n📦 Estado: Sincronización Paralela\n--------------------------\nCopia este código y úsalo en tu App para ver el inventario real:\n\n${backupString}`;
+        
+        // Ocultar alerta
+        document.getElementById('alerta-backup').style.display = 'none';
+        
+        // Enviar por WhatsApp al Ingeniero
+        window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
     function restaurarBackup() {
-        const json = prompt("Pegue el contenido del archivo de backup aquí:");
+        const json = prompt("INGENIERO: Pegue aquí el código de backup enviado por WhatsApp:");
         if (!json) return;
         try {
             const data = JSON.parse(json);
             inventory = data.inv || [];
             logs = data.hist || [];
             save();
-            alert("¡Restauración exitosa!");
-        } catch (e) {
-            alert("Error: El código pegado no es válido.");
-        }
+            alert("✅ INGENIERO: Información sincronizada. Ahora tiene el control de la bodega en su celular.");
+        } catch (e) { alert("Error en el formato del código."); }
     }
 
-    function eliminarLog(idx) {
-        if(confirm("¿Borrar este registro?")) { logs.splice(idx, 1); save(); }
+    function exportarExcel() {
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(logs), "Historial");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inventory), "Saldos");
+        XLSX.writeFile(wb, "Auditoria_VibrasPositivas.xlsx");
     }
+
+    function addItemManual() {
+        const n = prompt("Nombre:").toUpperCase();
+        if(n) { inventory.push({nombre:n, saldo:0}); save(); }
+    }
+    function eliminarLog(idx) { if(confirm("Borrar?")) { logs.splice(idx, 1); save(); } }
 </script>
 </body>
 </html>

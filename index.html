@@ -4,64 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Auditoría Almacén - Vibras Positivas</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --error: #e74c3c; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 50px; }
-        
         header { background: var(--negro); color: var(--oro); padding: 20px; text-align: center; border-bottom: 5px solid var(--oro); }
-        .logo-v { font-size: 10px; letter-spacing: 3px; display: block; margin-bottom: 5px; color: #fff; }
-
         .container { padding: 15px; max-width: 600px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
-        
-        h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
-
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .type-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 11px; cursor: pointer; background: #fff; text-align: center; }
         .type-btn.active { background: var(--oro); border-color: var(--oro); font-weight: bold; }
-
         .item-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .input-cant { width: 80px; text-align: center; }
-
         .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 18px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-sec { background: #e0e0e0; color: #333; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; font-size: 13px; }
-        
-        /* Sección de Informes */
-        .informe-seccion { display: none; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: var(--negro); color: var(--oro); }
-
-        canvas { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 120px; background: #fafafa; }
+        .btn-sec { background: #e0e0e0; color: #333; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; }
+        .informe-seccion { display: none; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; background: white; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 5px; text-align: left; }
+        canvas { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 100px; background: #fafafa; }
         footer { text-align: center; font-size: 11px; color: #777; padding: 20px; }
     </style>
 </head>
 <body onload="initApp()">
 
 <header>
-    <span class="logo-v">✨ VIBRAS POSITIVAS ✨</span>
-    <strong>AUDITORÍA DE OBRA CIVIL</strong>
-    <div id="id-display" style="font-size: 11px; margin-top:5px; color: #fff;">ID: ---</div>
+    <div style="font-size: 9px; letter-spacing: 2px; color: white;">✨ VIBRAS POSITIVAS ✨</div>
+    <strong>CONTROL DE AUDITORÍA</strong>
 </header>
 
 <div class="container" id="vista-registro">
     <div class="card">
-        <h3>📍 Ubicación y Auditor</h3>
-        <input type="text" id="responsable" placeholder="Nombre del Auditor/Responsable">
-        <input type="text" id="frente" placeholder="Frente de Obra / Bodega">
+        <h3>👷 Auditor y Frente</h3>
+        <input type="text" id="responsable" placeholder="Nombre de quien reporta">
+        <input type="text" id="frente" placeholder="Frente de Obra">
     </div>
 
     <div class="card">
-        <h3>🔄 Tipo de Movimiento</h3>
+        <h3>🔄 Operación</h3>
         <div class="btn-group">
-            <div class="type-btn active" onclick="setTipo(this, 'SALIDA')">CONSUMO/SALIDA</div>
-            <div class="type-btn" onclick="setTipo(this, 'PRESTAMO')">PRÉSTAMO HERRAMIENTA</div>
+            <div class="type-btn active" onclick="setTipo(this, 'SALIDA')">SALIDA</div>
+            <div class="type-btn" onclick="setTipo(this, 'PRESTAMO')">PRÉSTAMO</div>
             <div class="type-btn" onclick="setTipo(this, 'DEVOLUCION')">DEVOLUCIÓN</div>
-            <div class="type-btn" onclick="setTipo(this, 'AVERIA')">AVERÍA / DAÑO</div>
-            <div class="type-btn" onclick="setTipo(this, 'INVENTARIO')">ENTRADA STOCK</div>
-            <div class="type-btn" onclick="setTipo(this, 'BAJA')">BAJA / PÉRDIDA</div>
+            <div class="type-btn" onclick="setTipo(this, 'AVERIA')">AVERÍA</div>
         </div>
         <input type="hidden" id="tipo_mov" value="SALIDA">
     </div>
@@ -70,64 +55,72 @@
         <h3>📦 Materiales</h3>
         <div id="lista-items">
             <div class="item-row">
-                <input type="text" class="in-art" placeholder="Descripción">
-                <input type="number" class="in-can" placeholder="Cant.">
+                <input type="text" class="in-art" placeholder="Material">
+                <input type="number" style="width:70px" class="in-can" placeholder="Cant.">
             </div>
         </div>
-        <button class="btn-sec" onclick="addItem()">+ AGREGAR ITEM</button>
+        <button class="btn-sec" onclick="addItem()">+ ITEM</button>
     </div>
 
     <div class="card">
-        <h3>✍️ Conformidad</h3>
+        <h3>✍️ Firma</h3>
         <canvas id="signature-pad"></canvas>
     </div>
 
-    <button class="btn-main" onclick="procesarRegistro()">💾 REGISTRAR Y ENVIAR</button>
-    <button class="btn-sec" onclick="alternarVistas()">📊 VER INFORMES DE AUDITORÍA</button>
+    <button class="btn-main" onclick="procesarRegistro()">💾 REGISTRAR Y WHATSAPP</button>
+    <button class="btn-sec" onclick="alternarVistas()">📊 VER INFORMES / EXCEL</button>
 </div>
 
 <div class="container informe-seccion" id="vista-informes">
     <div class="card">
-        <h3>📋 Historial de Movimientos</h3>
+        <h3>📊 Reportes Acumulados</h3>
         <div style="overflow-x: auto;">
             <table id="tabla-logs">
                 <thead>
                     <tr>
                         <th>Fecha</th>
                         <th>Tipo</th>
-                        <th>Responsable</th>
-                        <th>Detalle</th>
+                        <th>Frente</th>
+                        <th>Artículos</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpo-tabla"></tbody>
             </table>
         </div>
-        <button class="btn-main" style="margin-top:15px; background: #27ae60;" onclick="exportarExcel()">📥 EXPORTAR A EXCEL</button>
-        <button class="btn-sec" onclick="alternarVistas()">⬅️ VOLVER AL REGISTRO</button>
-        <button class="btn-sec" style="color:red;" onclick="borrarDB()">🗑️ LIMPIAR HISTORIAL</button>
+        
+        <button class="btn-main" style="margin-top:20px; background: #27ae60;" onclick="exportarExcel()">📥 DESCARGAR EXCEL (.xlsx)</button>
+        <button class="btn-sec" onclick="alternarVistas()">⬅️ VOLVER</button>
+        <button class="btn-sec" style="color:red;" onclick="borrarDB()">🗑️ BORRAR TODO</button>
     </div>
 </div>
 
 <footer>
-    SISTEMA DE CONTROL DE ACTIVOS <br>
-    <strong>VIBRAS POSITIVAS</strong> © 2026
+    LOGÍSTICA DE OBRA CIVIL <br>
+    <strong>DESARROLLADO POR VIBRAS POSITIVAS</strong> © 2026
 </footer>
 
 <script>
     let canvas, ctx, drawing = false;
-    let currentID = "";
 
     function initApp() {
-        currentID = "AUD-" + Math.floor(Date.now() / 1000).toString().slice(-6);
-        document.getElementById('id-display').innerText = "ID SEGUIMIENTO: #" + currentID;
-        
         if(localStorage.getItem('resp_saved')) document.getElementById('responsable').value = localStorage.getItem('resp_saved');
-
         canvas = document.getElementById('signature-pad');
         ctx = canvas.getContext('2d');
         canvas.width = canvas.offsetWidth;
         setupCanvas();
-        cargarTabla();
+    }
+
+    function setupCanvas() {
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            return { x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left, 
+                     y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top };
+        };
+        const start = (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); };
+        const move = (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+        const stop = () => { drawing = false; };
+        canvas.addEventListener('touchstart', start); canvas.addEventListener('touchmove', move); canvas.addEventListener('touchend', stop);
+        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
     }
 
     function setTipo(btn, valor) {
@@ -139,20 +132,8 @@
     function addItem() {
         const div = document.createElement('div');
         div.className = 'item-row';
-        div.innerHTML = `<input type="text" class="in-art" placeholder="Descripción"><input type="number" class="in-can" placeholder="Cant.">`;
+        div.innerHTML = `<input type="text" class="in-art" placeholder="Material"><input type="number" style="width:70px" class="in-can" placeholder="Cant.">`;
         document.getElementById('lista-items').appendChild(div);
-    }
-
-    function setupCanvas() {
-        const getPos = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            return { x: (e.clientX || e.touches[0].clientX) - rect.left, y: (e.clientY || e.touches[0].clientY) - rect.top };
-        };
-        const start = (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); };
-        const move = (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-        const stop = () => { drawing = false; };
-        canvas.addEventListener('touchstart', start); canvas.addEventListener('touchmove', move); canvas.addEventListener('touchend', stop);
-        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
     }
 
     function alternarVistas() {
@@ -170,69 +151,61 @@
         const resp = document.getElementById('responsable').value;
         const frente = document.getElementById('frente').value;
         const tipo = document.getElementById('tipo_mov').value;
-        
-        if(!resp || !frente) return alert("Socio, complete los datos.");
+        if(!resp || !frente) return alert("Complete los datos básicos.");
 
         localStorage.setItem('resp_saved', resp);
 
-        let itemsText = "";
         let itemsArr = [];
         document.querySelectorAll('.item-row').forEach(row => {
             const a = row.querySelector('.in-art').value;
             const c = row.querySelector('.in-can').value;
-            if(a) {
-                itemsText += `• ${a}: ${c}\n`;
-                itemsArr.push(`${a}(${c})`);
-            }
+            if(a) itemsArr.push(`${a} (${c})`);
         });
 
-        // Guardar en DB Local
         const log = {
-            id: currentID,
             fecha: new Date().toLocaleString(),
             tipo: tipo,
-            resp: resp,
+            auditor: resp,
             frente: frente,
-            detalle: itemsArr.join(", ")
+            articulos: itemsArr.join(", ")
         };
-        let logs = JSON.parse(localStorage.getItem('audit_db') || "[]");
-        logs.unshift(log);
-        localStorage.setItem('audit_db', JSON.stringify(logs));
 
-        // WhatsApp
-        const msg = `*🛡️ AUDITORÍA ALMACÉN - VIBRAS POSITIVAS*\n` +
-                    `🆔 ID: ${currentID}\n` +
-                    `📅 FECHA: ${log.fecha}\n` +
-                    `👷 AUDITOR: ${resp}\n` +
-                    `📍 FRENTE: ${frente}\n` +
-                    `📑 TIPO: ${tipo}\n` +
-                    `---------------------------\n` +
-                    `*MATERIALES:*\n${itemsText}` +
-                    `---------------------------\n` +
-                    `✅ Registro verificado y guardado.`;
+        let db = JSON.parse(localStorage.getItem('audit_db') || "[]");
+        db.unshift(log);
+        localStorage.setItem('audit_db', JSON.stringify(db));
 
+        const msg = `*🛡️ REPORTE ALMACÉN - VIBRAS POSITIVAS*\n📅 FECHA: ${log.fecha}\n👷 AUDITOR: ${resp}\n📍 FRENTE: ${frente}\n📑 TIPO: ${tipo}\n📦 DETALLE: ${log.articulos}`;
         window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
     function cargarTabla() {
-        const logs = JSON.parse(localStorage.getItem('audit_db') || "[]");
+        const db = JSON.parse(localStorage.getItem('audit_db') || "[]");
         const cuerpo = document.getElementById('cuerpo-tabla');
         cuerpo.innerHTML = "";
-        logs.forEach(l => {
-            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.resp}</td><td>${l.detalle}</td></tr>`;
+        db.forEach(l => {
+            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.frente}</td><td>${l.articulos}</td></tr>`;
         });
     }
 
     function exportarExcel() {
-        const logs = JSON.parse(localStorage.getItem('audit_db') || "[]");
-        const ws = XLSX.utils.json_to_sheet(logs);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
-        XLSX.writeFile(wb, "Informe_Almacen_VibrasPositivas.xlsx");
+        const db = JSON.parse(localStorage.getItem('audit_db') || "[]");
+        if(db.length === 0) return alert("No hay datos para exportar.");
+
+        try {
+            const worksheet = XLSX.utils.json_to_sheet(db);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
+            
+            // Generar archivo y forzar descarga
+            XLSX.writeFile(workbook, "Reporte_Almacen_VibrasPositivas.xlsx");
+        } catch (e) {
+            alert("Error al generar Excel. Intente desde un navegador como Chrome o Safari.");
+            console.error(e);
+        }
     }
 
     function borrarDB() {
-        if(confirm("¿Seguro que desea borrar todo el historial?")) {
+        if(confirm("¿Borrar todo el historial de este teléfono?")) {
             localStorage.removeItem('audit_db');
             cargarTabla();
         }

@@ -3,228 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Almacén - Vibras Positivas</title>
+    <title>Saldos de Almacén - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --success: #27ae60; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 50px; }
-        header { background: var(--negro); color: var(--oro); padding: 20px; text-align: center; border-bottom: 5px solid var(--oro); }
-        .logo-v { font-size: 10px; letter-spacing: 3px; color: #fff; margin-bottom: 5px; }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
-        h3 { margin-top: 0; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px; color: #444; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .type-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 11px; cursor: pointer; background: #fff; text-align: center; }
-        .type-btn.active { background: var(--oro); border-color: var(--oro); font-weight: bold; }
-        .item-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 18px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-sec { background: #e0e0e0; color: #333; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; }
-        .informe-seccion { display: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-        canvas { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 100px; background: #fafafa; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --verde: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 60px; }
+        header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); position: sticky; top: 0; z-index: 100; }
+        .container { padding: 15px; max-width: 650px; margin: auto; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
+        h3 { margin-top: 0; font-size: 13px; text-transform: uppercase; color: #444; display: flex; justify-content: space-between; }
+        
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        
+        .tab-bar { display: flex; background: #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
+        .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .tab-btn.active { background: var(--oro); color: var(--negro); }
+
+        .item-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* Tabla de Saldos */
+        .tabla-saldos { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tabla-saldos th { background: #eee; padding: 8px; text-align: left; }
+        .tabla-saldos td { padding: 8px; border-bottom: 1px solid #eee; }
+        .stock-bajo { color: var(--rojo); font-weight: bold; }
+
         footer { text-align: center; font-size: 11px; color: #777; padding: 20px; }
     </style>
 </head>
 <body onload="initApp()">
 
 <header>
-    <div class="logo-v">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>LOGÍSTICA Y AUDITORÍA</strong>
-    <div id="fecha-col" style="font-size: 12px; color: #fff; margin-top: 5px;">Cargando hora de Colombia...</div>
+    <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
+    <strong>GESTIÓN DE SALDOS Y AUDITORÍA</strong>
+    <div id="reloj" style="font-size: 11px; margin-top: 5px;"></div>
 </header>
 
-<div class="container" id="vista-registro">
-    <div class="card">
-        <h3>👷 Control de Personal</h3>
-        <input type="text" id="entregado_por" placeholder="📦 Entregado por (Bodeguero)">
-        <input type="text" id="recibido_por" placeholder="👷 Recibido por (Operario/Frente)">
-        <input type="text" id="frente" placeholder="📍 Frente de Obra / Destino">
+<div class="container">
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="verTab('movimiento')">MOVIMIENTOS</button>
+        <button class="tab-btn" onclick="verTab('inventario')">📦 SALDOS (EXISTENCIAS)</button>
+        <button class="tab-btn" onclick="verTab('informes')">📊 INFORMES</button>
     </div>
 
-    <div class="card">
-        <h3>🔄 Operación de Almacén</h3>
-        <div class="btn-group">
-            <div class="type-btn active" onclick="setTipo(this, 'SALIDA')">SALIDA / CONSUMO</div>
-            <div class="type-btn" onclick="setTipo(this, 'PRESTAMO')">PRÉSTAMO HERRAMIENTA</div>
-            <div class="type-btn" onclick="setTipo(this, 'DEVOLUCION')">DEVOLUCIÓN</div>
-            <div class="type-btn" onclick="setTipo(this, 'AVERIA')">AVERÍA / DAÑO</div>
+    <div id="movimiento" class="tab-content">
+        <div class="card">
+            <h3>👷 Personal Responsable</h3>
+            <input type="text" id="bodeguero" placeholder="Quién Entrega (Bodeguero)">
+            <input type="text" id="receptor" placeholder="Quién Recibe (Operario)">
+            <select id="tipo_mov">
+                <option value="SALIDA">🔴 SALIDA / CONSUMO (Resta)</option>
+                <option value="DEVOLUCION">🟢 DEVOLUCIÓN (Suma)</option>
+                <option value="PRESTAMO">🛠️ PRÉSTAMO HERRAMIENTA</option>
+                <option value="AVERIA">⚠️ AVERÍA / DAÑO</option>
+            </select>
         </div>
-        <input type="hidden" id="tipo_mov" value="SALIDA">
-    </div>
-
-    <div class="card">
-        <h3>📋 Materiales e Insumos</h3>
-        <div id="lista-items">
-            <div class="item-row">
-                <input type="text" class="in-art" placeholder="Descripción">
-                <input type="number" style="width:70px" class="in-can" placeholder="Cant.">
+        <div class="card">
+            <h3>📋 Detalles del Vale</h3>
+            <div id="lista-mov">
+                <div class="item-row">
+                    <input type="text" class="m-art" placeholder="Producto" list="lista-productos">
+                    <input type="number" class="m-can" placeholder="Cant.">
+                </div>
             </div>
+            <button onclick="addFilaMov()" style="width:100%; margin-top:5px; border:1px dashed #ccc; padding:5px; cursor:pointer">+ OTRO ITEM</button>
         </div>
-        <button class="btn-sec" onclick="addItem()">+ AGREGAR OTRO ÍTEM</button>
+        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR Y DESCONTAR</button>
     </div>
 
-    <div class="card">
-        <h3>✍️ Firma de Recibido</h3>
-        <canvas id="signature-pad"></canvas>
-    </div>
+    <div id="inventario" class="tab-content" style="display:none;">
+        <div class="card">
+            <h3>📥 Carga de Mercancía Inicial</h3>
+            <p style="font-size:11px; color:#666;">Use esta sección para recibir la bodega o cargar saldos nuevos.</p>
+            <div id="lista-inv">
+                <div class="item-row">
+                    <input type="text" class="i-art" placeholder="Producto/Herramienta">
+                    <input type="number" class="i-can" placeholder="Saldo Inicial">
+                </div>
+            </div>
+            <button onclick="addFilaInv()" style="width:100%; margin-top:5px; border:1px dashed #ccc; padding:5px; cursor:pointer">+ CARGAR OTRO</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="cargarSaldos()">📥 ACTUALIZAR SALDOS</button>
+        </div>
 
-    <button class="btn-main" onclick="procesarRegistro()">💾 REGISTRAR MOVIMIENTO</button>
-    <button class="btn-sec" onclick="alternarVistas()">📊 CONSULTAR INFORMES</button>
-</div>
-
-<div class="container informe-seccion" id="vista-informes">
-    <div class="card">
-        <h3>📊 Historial de Auditoría</h3>
-        <div style="overflow-x: auto;">
-            <table id="tabla-logs">
-                <thead>
-                    <tr>
-                        <th>Fecha/Hora</th>
-                        <th>Tipo</th>
-                        <th>Entregó</th>
-                        <th>Recibió</th>
-                        <th>Detalle</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpo-tabla"></tbody>
+        <div class="card">
+            <h3>📈 Existencias Actuales</h3>
+            <table class="tabla-saldos">
+                <thead><tr><th>Producto</th><th>Saldo Actual</th></tr></thead>
+                <tbody id="cuerpo-saldos"></tbody>
             </table>
         </div>
-        <button class="btn-main" style="margin-top:20px; background: var(--success);" onclick="exportarExcel()">📥 DESCARGAR EXCEL</button>
-        <button class="btn-sec" onclick="alternarVistas()">⬅️ VOLVER AL REGISTRO</button>
+    </div>
+
+    <div id="informes" class="tab-content" style="display:none;">
+        <div class="card">
+            <h3>📊 Histórico de Auditoría</h3>
+            <div style="overflow-x:auto;">
+                <table class="tabla-saldos" id="tabla-logs">
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Entregó</th><th>Recibió</th><th>Detalle</th></tr></thead>
+                    <tbody id="cuerpo-logs"></tbody>
+                </table>
+            </div>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 EXPORTAR EXCEL</button>
+            <button class="btn-main" style="margin-top:5px; background:#666; font-size:12px;" onclick="borrarTodo()">🗑️ RESET TOTAL</button>
+        </div>
     </div>
 </div>
 
+<datalist id="lista-productos"></datalist>
+
 <footer>
-    VALE DE ALMACÉN AUDITABLE <br>
-    <strong>DESARROLLADO POR VIBRAS POSITIVAS</strong> © 2026
+    SISTEMA DE CONTROL DE SALDOS <br>
+    <strong>VIBRAS POSITIVAS</strong> © 2026
 </footer>
 
 <script>
-    let canvas, ctx, drawing = false;
+    let inventory = JSON.parse(localStorage.getItem('vp_saldos') || "{}");
+    let logs = JSON.parse(localStorage.getItem('vp_logs') || "[]");
 
     function initApp() {
-        // Mostrar fecha real de Colombia
         actualizarReloj();
         setInterval(actualizarReloj, 1000);
-        
-        if(localStorage.getItem('bodeguero')) document.getElementById('entregado_por').value = localStorage.getItem('bodeguero');
-        
-        canvas = document.getElementById('signature-pad');
-        ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth;
-        setupCanvas();
+        actualizarVistaSaldos();
+        cargarTablaLogs();
+        if(localStorage.getItem('last_bodeguero')) document.getElementById('bodeguero').value = localStorage.getItem('last_bodeguero');
     }
 
     function actualizarReloj() {
-        const ahora = new Date();
         const opciones = { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' };
-        document.getElementById('fecha-col').innerText = ahora.toLocaleString('es-CO', opciones);
+        document.getElementById('reloj').innerText = new Date().toLocaleString('es-CO', opciones);
     }
 
-    function setupCanvas() {
-        const getPos = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            return { x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left, 
-                     y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top };
-        };
-        const start = (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); };
-        const move = (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
-        const stop = () => { drawing = false; };
-        canvas.addEventListener('touchstart', start); canvas.addEventListener('touchmove', move); canvas.addEventListener('touchend', stop);
-        canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', stop);
+    function verTab(id) {
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).style.display = 'block';
+        event.currentTarget.classList.add('active');
+        if(id === 'inventario') actualizarVistaSaldos();
     }
 
-    function setTipo(btn, valor) {
-        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tipo_mov').value = valor;
-    }
-
-    function addItem() {
+    function addFilaMov() {
         const div = document.createElement('div');
         div.className = 'item-row';
-        div.innerHTML = `<input type="text" class="in-art" placeholder="Descripción"><input type="number" style="width:70px" class="in-can" placeholder="Cant.">`;
-        document.getElementById('lista-items').appendChild(div);
+        div.innerHTML = `<input type="text" class="m-art" placeholder="Producto" list="lista-productos"><input type="number" class="m-can" placeholder="Cant.">`;
+        document.getElementById('lista-mov').appendChild(div);
     }
 
-    function alternarVistas() {
-        const reg = document.getElementById('vista-registro');
-        const inf = document.getElementById('vista-informes');
-        if(reg.style.display === "none") {
-            reg.style.display = "block"; inf.style.display = "none";
-        } else {
-            reg.style.display = "none"; inf.style.display = "block";
-            cargarTabla();
-        }
+    function addFilaInv() {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `<input type="text" class="i-art" placeholder="Producto"><input type="number" class="i-can" placeholder="Saldo">`;
+        document.getElementById('lista-inv').appendChild(div);
     }
 
-    function procesarRegistro() {
-        const entrego = document.getElementById('entregado_por').value;
-        const recibio = document.getElementById('recibido_por').value;
-        const frente = document.getElementById('frente').value;
+    // CARGAR SALDOS INICIALES
+    function cargarSaldos() {
+        document.querySelectorAll('#lista-inv .item-row').forEach(row => {
+            const art = row.querySelector('.i-art').value.trim().toUpperCase();
+            const can = parseFloat(row.querySelector('.i-can').value) || 0;
+            if(art) inventory[art] = (inventory[art] || 0) + can;
+        });
+        saveData();
+        alert("Saldos actualizados correctamente.");
+        row.querySelectorAll('input').forEach(i => i.value = ""); // Limpiar
+    }
+
+    // PROCESAR MOVIMIENTO (Resta o Suma)
+    function procesarMovimiento() {
+        const b = document.getElementById('bodeguero').value;
+        const r = document.getElementById('receptor').value;
         const tipo = document.getElementById('tipo_mov').value;
-        const fechaHora = document.getElementById('fecha-col').innerText;
+        const fecha = document.getElementById('reloj').innerText;
 
-        if(!entrego || !recibio || !frente) return alert("Error: Debe indicar quién entrega, quién recibe y el frente.");
+        if(!b || !r) return alert("Faltan nombres de bodeguero o receptor.");
 
-        localStorage.setItem('bodeguero', entrego);
-
-        let itemsText = "";
+        let detalleMsg = "";
         let itemsArr = [];
-        document.querySelectorAll('.item-row').forEach(row => {
-            const a = row.querySelector('.in-art').value;
-            const c = row.querySelector('.in-can').value;
-            if(a) {
-                itemsText += `• ${a}: ${c}\n`;
-                itemsArr.push(`${a}(${c})`);
+
+        document.querySelectorAll('#lista-mov .item-row').forEach(row => {
+            const art = row.querySelector('.m-art').value.trim().toUpperCase();
+            const can = parseFloat(row.querySelector('.m-can').value) || 0;
+
+            if(art && can > 0) {
+                // Lógica de Saldos
+                if(tipo === 'SALIDA' || tipo === 'PRESTAMO' || tipo === 'AVERIA') {
+                    inventory[art] = (inventory[art] || 0) - can;
+                } else if(tipo === 'DEVOLUCION') {
+                    inventory[art] = (inventory[art] || 0) + can;
+                }
+                detalleMsg += `• ${art}: ${can}\n`;
+                itemsArr.push(`${art}(${can})`);
             }
         });
 
-        const log = {
-            fecha: fechaHora,
-            tipo: tipo,
-            entrego: entrego,
-            recibio: recibio,
-            frente: frente,
-            materiales: itemsArr.join(", ")
-        };
+        if(itemsArr.length === 0) return alert("No hay artículos válidos.");
 
-        let db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
-        db.unshift(log);
-        localStorage.setItem('audit_db_v2', JSON.stringify(db));
+        const logEntry = { fecha, tipo, entrego: b, recibio: r, detalle: itemsArr.join(", ") };
+        logs.unshift(logEntry);
+        localStorage.setItem('last_bodeguero', b);
+        saveData();
 
-        const msg = `*🛡️ VALE DE ALMACÉN - VIBRAS POSITIVAS*\n` +
-                    `📅 *FECHA:* ${fechaHora}\n` +
-                    `📑 *TIPO:* ${tipo}\n` +
-                    `📦 *ENTREGÓ:* ${entrego}\n` +
-                    `👷 *RECIBIÓ:* ${recibio}\n` +
-                    `📍 *FRENTE:* ${frente}\n` +
-                    `---------------------------\n` +
-                    `*MATERIALES:*\n${itemsText}\n` +
-                    `---------------------------\n` +
-                    `✅ _Registro verificado por Auditoría_`;
-
+        const msg = `*🛡️ AUDITORÍA ALMACÉN - VIBRAS POSITIVAS*\n📅 ${fecha}\n📑 MOVIMIENTO: ${tipo}\n📦 ENTREGÓ: ${b}\n👷 RECIBIÓ: ${r}\n---------------------------\n${detalleMsg}---------------------------\n✅ Saldos actualizados en sistema.`;
         window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
-    function cargarTabla() {
-        const db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
-        const cuerpo = document.getElementById('cuerpo-tabla');
+    function saveData() {
+        localStorage.setItem('vp_saldos', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs', JSON.stringify(logs));
+        actualizarVistaSaldos();
+    }
+
+    function actualizarVistaSaldos() {
+        const cuerpo = document.getElementById('cuerpo-saldos');
+        const datalist = document.getElementById('lista-productos');
         cuerpo.innerHTML = "";
-        db.forEach(l => {
-            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.entrego}</td><td>${l.recibio}</td><td>${l.materiales}</td></tr>`;
+        datalist.innerHTML = "";
+        
+        for (let art in inventory) {
+            const saldo = inventory[art];
+            const clase = saldo <= 0 ? 'stock-bajo' : '';
+            cuerpo.innerHTML += `<tr><td>${art}</td><td class="${clase}">${saldo}</td></tr>`;
+            datalist.innerHTML += `<option value="${art}">`;
+        }
+    }
+
+    function cargarTablaLogs() {
+        const cuerpo = document.getElementById('cuerpo-logs');
+        cuerpo.innerHTML = "";
+        logs.forEach(l => {
+            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.entrego}</td><td>${l.recibio}</td><td>${l.detalle}</td></tr>`;
         });
     }
 
     function exportarExcel() {
-        const db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
-        if(db.length === 0) return alert("No hay datos.");
-        const ws = XLSX.utils.json_to_sheet(db);
+        const wsMov = XLSX.utils.json_to_sheet(logs);
+        const wsSal = XLSX.utils.json_to_sheet(Object.keys(inventory).map(k => ({Producto: k, Saldo: inventory[k]})));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "AuditoriaAlmacen");
-        XLSX.writeFile(wb, "Reporte_Almacen_VibrasPositivas.xlsx");
+        XLSX.utils.book_append_sheet(wb, wsMov, "Historial_Movimientos");
+        XLSX.utils.book_append_sheet(wb, wsSal, "Saldos_Actuales");
+        XLSX.writeFile(wb, "Auditoria_Almacen_Completa.xlsx");
+    }
+
+    function borrarTodo() {
+        if(confirm("¿Seguro? Se borrarán todos los saldos e historial.")) {
+            localStorage.clear();
+            location.reload();
+        }
     }
 </script>
 </body>

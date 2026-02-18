@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría Paralela - Vibras Positivas</title>
+    <title>Espejo de Auditoría - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --rojo: #e74c3c; --azul: #3498db; --verde: #27ae60; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --azul: #3498db; --verde: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 60px; }
         header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); }
         .container { padding: 15px; max-width: 650px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
-        
-        /* Alerta de Backup */
-        #alerta-backup { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px solid #ffeeba; font-size: 12px; font-weight: bold; text-align: center; }
-
         .tab-bar { display: flex; background: #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
         .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
         .tab-btn.active { background: var(--oro); color: var(--negro); }
@@ -23,35 +19,35 @@
         .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-        .btn-del { color: var(--rojo); font-weight: bold; cursor: pointer; border: none; background: none; }
-        .btn-edit { color: var(--azul); font-weight: bold; cursor: pointer; border: none; background: none; margin-right: 10px; }
         footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
+        #alerta-backup { background: #d1ecf1; color: #0c5460; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body onload="initApp()">
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>LOGÍSTICA AUDITABLE PARALELA</strong>
+    <strong>ESPEJO DE AUDITORÍA BODEGA</strong>
+    <div id="reloj-col" style="font-size: 11px; margin-top: 5px; color: #fff;"></div>
 </header>
 
 <div class="container">
     <div id="alerta-backup">
-        ⏳ Toca aquí para enviar el Backup de las 2 horas al Ingeniero.
-        <button onclick="enviarBackupAutomatico()" style="margin-top:5px; background:var(--azul); color:white; border:none; padding:5px; border-radius:5px;">ENVIAR AHORA</button>
+        📢 SINCRONIZACIÓN PENDIENTE (Cada 2 horas)
+        <button onclick="enviarEspejo()" style="margin-top:8px; background:var(--verde); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">ENVIAR ESPEJO AL INGENIERO</button>
     </div>
 
     <div class="tab-bar">
         <button class="tab-btn active" onclick="verTab('movimiento')">REGISTRAR</button>
-        <button class="tab-btn" onclick="verTab('inventario')">📦 EXISTENCIAS</button>
-        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL / BACKUP</button>
+        <button class="tab-btn" onclick="verTab('inventario')">📦 SALDOS</button>
+        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL / ESPEJO</button>
     </div>
 
     <div id="movimiento" class="tab-content">
         <div class="card">
-            <h3>📝 Registro de Bodega</h3>
-            <input type="text" id="bodeguero" placeholder="Bodeguero (Entrega)">
-            <input type="text" id="receptor" placeholder="Receptor (Recibe)">
+            <h3>📝 Vale de Almacén</h3>
+            <input type="text" id="bodeguero" placeholder="Entrega (Bodeguero)">
+            <input type="text" id="receptor" placeholder="Recibe (Operario)">
             <select id="tipo_mov">
                 <option value="SALIDA">🔴 SALIDA / CONSUMO</option>
                 <option value="DEVOLUCION">🟢 DEVOLUCIÓN</option>
@@ -63,38 +59,37 @@
                     <input type="number" class="m-can" placeholder="Cant.">
                 </div>
             </div>
-            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px; cursor:pointer">+ OTRO ÍTEM</button>
+            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px;">+ OTRO ARTÍCULO</button>
         </div>
-        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR</button>
+        <button class="btn-main" onclick="procesarMovimiento()">💾 FINALIZAR REGISTRO</button>
     </div>
 
     <div id="inventario" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📦 Inventario en Vivo</h3>
-            <table>
-                <thead><tr><th>Producto</th><th>Saldo</th><th>Acción</th></tr></thead>
+            <h3>📦 Existencias Actuales</h3>
+            <table id="tabla-saldos">
+                <thead><tr><th>Producto</th><th>Saldo</th><th>Editar</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
             </table>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO PRODUCTO</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO ITEM</button>
         </div>
     </div>
 
     <div id="informes" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📊 Historial de Movimientos</h3>
+            <h3>📊 Espejo de Actividad (Historial)</h3>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Acción</th></tr></thead>
+                    <thead><tr><th>Fecha/Hora</th><th>Tipo</th><th>Producto</th><th>Cant.</th><th>Recibió</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
             </div>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 EXCEL</button>
         </div>
 
         <div class="card">
-            <h3>💾 Sincronización Manual (Backup)</h3>
-            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="enviarBackupAutomatico()">📤 ENVIAR RESPALDO POR WHATSAPP</button>
-            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR DATOS EN ESTE EQUIPO</button>
+            <h3>💾 Sincronización Paralela</h3>
+            <button class="btn-main" style="background:var(--azul);" onclick="enviarEspejo()">📤 ENVIAR ESPEJO COMPLETO (BACKUP)</button>
+            <button class="btn-main" style="background:#666; margin-top:10px;" onclick="restaurarEspejo()">📥 RESTAURAR ESPEJO (INGENIERO)</button>
         </div>
     </div>
 </div>
@@ -102,19 +97,21 @@
 <datalist id="lista-productos"></datalist>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('vp_inv_v6') || "[]");
-    let logs = JSON.parse(localStorage.getItem('vp_logs_v6') || "[]");
+    let inventory = JSON.parse(localStorage.getItem('vp_inv_vFinal') || "[]");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_vFinal') || "[]");
+    let ultimoBackup = Date.now();
 
     function initApp() {
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
         actualizarTablas();
         if(localStorage.getItem('last_bod')) document.getElementById('bodeguero').value = localStorage.getItem('last_bod');
-        
-        // Iniciar temporizador de 2 horas (7200000 ms)
-        setInterval(mostrarAlertaBackup, 7200000); 
+        setInterval(() => { if(Date.now() - ultimoBackup > 7200000) document.getElementById('alerta-backup').style.display='block'; }, 300000);
     }
 
-    function mostrarAlertaBackup() {
-        document.getElementById('alerta-backup').style.display = 'block';
+    function actualizarReloj() {
+        const opciones = { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' };
+        document.getElementById('reloj-col').innerText = new Date().toLocaleString('es-CO', opciones);
     }
 
     function verTab(id) {
@@ -137,94 +134,74 @@
         const dList = document.getElementById('lista-productos');
         cSaldos.innerHTML = ""; dList.innerHTML = "";
         inventory.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((item, index) => {
-            cSaldos.innerHTML += `<tr><td>${item.nombre}</td><td><strong>${item.saldo}</strong></td><td><button class="btn-edit" onclick="editarArticulo(${index})">✏️</button></td></tr>`;
+            cSaldos.innerHTML += `<tr><td>${item.nombre}</td><td><strong>${item.saldo}</strong></td><td><button onclick="editarArticulo(${index})">✏️</button></td></tr>`;
             dList.innerHTML += `<option value="${item.nombre}">`;
         });
         const cLogs = document.getElementById('cuerpo-logs');
         cLogs.innerHTML = "";
-        logs.forEach((l, index) => {
-            cLogs.innerHTML += `<tr><td>${l.fecha.split(' ')[0]}</td><td>${l.producto}</td><td>${l.cantidad}</td><td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td></tr>`;
+        logs.forEach(l => {
+            cLogs.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.producto}</td><td>${l.cantidad}</td><td>${l.recibió}</td></tr>`;
         });
-    }
-
-    function editarArticulo(index) {
-        const nuevoNombre = prompt("Nombre:", inventory[index].nombre);
-        const nuevoSaldo = prompt("Saldo:", inventory[index].saldo);
-        if(nuevoNombre && nuevoSaldo) {
-            inventory[index].nombre = nuevoNombre.toUpperCase().trim();
-            inventory[index].saldo = parseFloat(nuevoSaldo) || 0;
-            save();
-        }
     }
 
     function procesarMovimiento() {
         const b = document.getElementById('bodeguero').value;
         const r = document.getElementById('receptor').value;
         const tipo = document.getElementById('tipo_mov').value;
-        const fecha = new Date().toLocaleString('es-CO');
-        if(!b || !r) return alert("Indique responsables.");
+        const fecha = document.getElementById('reloj-col').innerText;
+        if(!b || !r) return alert("Faltan responsables.");
 
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
-            const nombreArt = row.querySelector('.m-art').value.toUpperCase().trim();
-            const cant = parseFloat(row.querySelector('.m-can').value) || 0;
-            if(nombreArt && cant > 0) {
-                let item = inventory.find(i => i.nombre === nombreArt);
-                if(!item) { item = { nombre: nombreArt, saldo: 0 }; inventory.push(item); }
-                if(tipo === 'SALIDA' || tipo === 'PRESTAMO') item.saldo -= cant;
-                else item.saldo += cant;
-                logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: nombreArt, cantidad: cant });
+            const art = row.querySelector('.m-art').value.toUpperCase().trim();
+            const can = parseFloat(row.querySelector('.m-can').value) || 0;
+            if(art && can > 0) {
+                let item = inventory.find(i => i.nombre === art);
+                if(!item) { item = { nombre: art, saldo: 0 }; inventory.push(item); }
+                if(tipo === 'SALIDA' || tipo === 'PRESTAMO') item.saldo -= can; else item.saldo += can;
+                logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: art, cantidad: can });
             }
         });
         save();
-        alert("Registrado.");
+        alert("✅ Registro exitoso. Historial actualizado.");
         location.reload();
     }
 
     function save() {
-        localStorage.setItem('vp_inv_v6', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs_v6', JSON.stringify(logs));
+        localStorage.setItem('vp_inv_vFinal', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_vFinal', JSON.stringify(logs));
         actualizarTablas();
     }
 
-    // --- EL CONTROL PARALELO DEL INGENIERO ---
-    function enviarBackupAutomatico() {
-        const data = { inv: inventory, hist: logs };
-        const backupString = JSON.stringify(data);
-        
-        // Mensaje para el Ingeniero
-        const msg = `🛡️ *BACKUP AUTOMÁTICO DE SEGURIDAD*\n📅 Fecha: ${new Date().toLocaleString()}\n📦 Estado: Sincronización Paralela\n--------------------------\nCopia este código y úsalo en tu App para ver el inventario real:\n\n${backupString}`;
-        
-        // Ocultar alerta
+    // EL ESPEJO TOTAL
+    function enviarEspejo() {
+        const espejoString = JSON.stringify({ inv: inventory, hist: logs });
+        const msg = `🛡️ *ESPEJO DE BODEGA - VIBRAS POSITIVAS*\n📅 *Corte:* ${document.getElementById('reloj-col').innerText}\n\nIngeniero, este código contiene el historial completo y saldos actuales. Cópielo y restáurelo en su App:\n\n${espejoString}`;
+        ultimoBackup = Date.now();
         document.getElementById('alerta-backup').style.display = 'none';
-        
-        // Enviar por WhatsApp al Ingeniero
         window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
-    function restaurarBackup() {
-        const json = prompt("INGENIERO: Pegue aquí el código de backup enviado por WhatsApp:");
+    function restaurarEspejo() {
+        const json = prompt("INGENIERO: Pegue el código del Espejo enviado por WhatsApp:");
         if (!json) return;
         try {
             const data = JSON.parse(json);
             inventory = data.inv || [];
             logs = data.hist || [];
             save();
-            alert("✅ INGENIERO: Información sincronizada. Ahora tiene el control de la bodega en su celular.");
-        } catch (e) { alert("Error en el formato del código."); }
+            alert("✅ Sincronización Exitosa. Ahora tiene el Historial y los Saldos actualizados en su dispositivo.");
+        } catch (e) { alert("Error: Código inválido."); }
     }
 
-    function exportarExcel() {
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(logs), "Historial");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inventory), "Saldos");
-        XLSX.writeFile(wb, "Auditoria_VibrasPositivas.xlsx");
+    function editarArticulo(i) {
+        const n = prompt("Nombre:", inventory[i].nombre);
+        const s = prompt("Saldo:", inventory[i].saldo);
+        if(n && s) { inventory[i].nombre = n.toUpperCase(); inventory[i].saldo = parseFloat(s); save(); }
     }
-
     function addItemManual() {
         const n = prompt("Nombre:").toUpperCase();
         if(n) { inventory.push({nombre:n, saldo:0}); save(); }
     }
-    function eliminarLog(idx) { if(confirm("Borrar?")) { logs.splice(idx, 1); save(); } }
 </script>
 </body>
 </html>

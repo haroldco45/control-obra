@@ -20,7 +20,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
         .btn-del { color: var(--rojo); font-weight: bold; cursor: pointer; border: none; background: none; }
-        .btn-edit { color: var(--azul); font-weight: bold; cursor: pointer; border: none; background: none; margin-right: 5px; }
+        .btn-edit { color: var(--azul); font-weight: bold; cursor: pointer; border: none; background: none; margin-right: 10px; }
         footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
     </style>
 </head>
@@ -28,7 +28,7 @@
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>LOGÍSTICA Y BACKUP SEGURO</strong>
+    <strong>LOGÍSTICA Y CONTROL TOTAL</strong>
 </header>
 
 <div class="container">
@@ -40,7 +40,7 @@
 
     <div id="movimiento" class="tab-content">
         <div class="card">
-            <h3>📝 Nuevo Vale</h3>
+            <h3>📝 Vale de Almacén</h3>
             <input type="text" id="bodeguero" placeholder="Bodeguero (Entrega)">
             <input type="text" id="receptor" placeholder="Receptor (Recibe)">
             <select id="tipo_mov">
@@ -66,15 +66,15 @@
                 <thead><tr><th>Producto</th><th>Saldo</th><th>Acción</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
             </table>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO PRODUCTO / SALDO</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO PRODUCTO</button>
         </div>
     </div>
 
     <div id="informes" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📊 Registros / Excel</h3>
+            <h3>📊 Registros Operables (Excel)</h3>
             <div style="overflow-x:auto;">
-                <table id="tabla-logs">
+                <table>
                     <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Acción</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
@@ -83,10 +83,9 @@
         </div>
 
         <div class="card">
-            <h3>💾 Sistema de Respaldo (Backup)</h3>
-            <p style="font-size:10px; color:#666;">Use esto para mover sus datos a otro celular.</p>
-            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="exportarBackup()">📤 GENERAR COPIA DE SEGURIDAD</button>
-            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR COPIA</button>
+            <h3>💾 Copia de Seguridad (Backup)</h3>
+            <button class="btn-main" style="background:var(--azul); font-size:12px;" onclick="exportarBackup()">📤 EXPORTAR BACKUP (.TXT)</button>
+            <button class="btn-main" style="background:#666; font-size:12px; margin-top:10px;" onclick="restaurarBackup()">📥 RESTAURAR BACKUP</button>
         </div>
     </div>
 </div>
@@ -94,8 +93,9 @@
 <datalist id="lista-productos"></datalist>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('vp_saldos_v4') || "{}");
-    let logs = JSON.parse(localStorage.getItem('vp_logs_v4') || "[]");
+    // Usamos arreglos para evitar problemas de llaves con caracteres especiales
+    let inventory = JSON.parse(localStorage.getItem('vp_inv_v5') || "[]");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_v5') || "[]");
 
     function initApp() {
         actualizarTablas();
@@ -121,39 +121,58 @@
         const cSaldos = document.getElementById('cuerpo-saldos');
         const dList = document.getElementById('lista-productos');
         cSaldos.innerHTML = ""; dList.innerHTML = "";
-        Object.keys(inventory).sort().forEach(art => {
+        
+        inventory.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((item, index) => {
             cSaldos.innerHTML += `<tr>
-                <td>${art}</td>
-                <td><strong>${inventory[art]}</strong></td>
+                <td>${item.nombre}</td>
+                <td><strong>${item.saldo}</strong></td>
                 <td>
-                    <button class="btn-edit" onclick="editarArticulo('${art}')">✏️</button>
-                    <button class="btn-del" onclick="eliminarArticulo('${art}')">🗑️</button>
+                    <button class="btn-edit" onclick="editarArticulo(${index})">✏️</button>
+                    <button class="btn-del" onclick="eliminarArticulo(${index})">🗑️</button>
                 </td>
             </tr>`;
-            dList.innerHTML += `<option value="${art}">`;
+            dList.innerHTML += `<option value="${item.nombre}">`;
         });
 
         const cLogs = document.getElementById('cuerpo-logs');
         cLogs.innerHTML = "";
         logs.forEach((l, index) => {
-            cLogs.innerHTML += `<tr><td>${l.fecha.split(' ')[0]}</td><td>${l.producto}</td><td>${l.cantidad}</td><td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td></tr>`;
+            cLogs.innerHTML += `<tr>
+                <td>${l.fecha.split(' ')[0]}</td>
+                <td>${l.producto}</td>
+                <td>${l.cantidad}</td>
+                <td><button class="btn-del" onclick="eliminarLog(${index})">❌</button></td>
+            </tr>`;
         });
     }
 
-    function editarArticulo(viejoNombre) {
-        const nuevoNombre = prompt("Editar nombre del producto:", viejoNombre).toUpperCase();
-        const nuevoSaldo = prompt("Editar cantidad actual:", inventory[viejoNombre]);
-        if (nuevoNombre && nuevoNombre !== viejoNombre) {
-            inventory[nuevoNombre] = parseFloat(nuevoSaldo) || 0;
-            delete inventory[viejoNombre];
-        } else {
-            inventory[viejoNombre] = parseFloat(nuevoSaldo) || 0;
-        }
+    // --- CORRECCIÓN DEL LÁPIZ: Edición por índice ---
+    function editarArticulo(index) {
+        const item = inventory[index];
+        const nuevoNombre = prompt("Nombre del producto:", item.nombre);
+        if (nuevoNombre === null) return;
+        
+        const nuevoSaldo = prompt("Cantidad actual en bodega:", item.saldo);
+        if (nuevoSaldo === null) return;
+
+        inventory[index].nombre = nuevoNombre.toUpperCase().trim();
+        inventory[index].saldo = parseFloat(nuevoSaldo) || 0;
         save();
     }
 
-    function eliminarArticulo(art) {
-        if(confirm(`¿Eliminar ${art} y su saldo?`)) { delete inventory[art]; save(); }
+    function eliminarArticulo(index) {
+        if(confirm(`¿Eliminar ${inventory[index].nombre} permanentemente?`)) {
+            inventory.splice(index, 1);
+            save();
+        }
+    }
+
+    function addItemManual() {
+        const nombre = prompt("Nombre del nuevo producto:").toUpperCase().trim();
+        if(!nombre) return;
+        const saldo = parseFloat(prompt("Saldo inicial:", 0)) || 0;
+        inventory.push({ nombre, saldo });
+        save();
     }
 
     function procesarMovimiento() {
@@ -162,69 +181,74 @@
         const tipo = document.getElementById('tipo_mov').value;
         const fecha = new Date().toLocaleString('es-CO');
 
-        if(!b || !r) return alert("Faltan responsables.");
+        if(!b || !r) return alert("Socio, ponga quién entrega y quién recibe.");
 
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
-            const art = row.querySelector('.m-art').value.toUpperCase().trim();
-            const can = parseFloat(row.querySelector('.m-can').value) || 0;
-            if(art && can > 0) {
-                if(tipo === 'SALIDA' || tipo === 'PRESTAMO') inventory[art] = (inventory[art] || 0) - can;
-                else inventory[art] = (inventory[art] || 0) + can;
-                logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: art, cantidad: can });
+            const nombreArt = row.querySelector('.m-art').value.toUpperCase().trim();
+            const cant = parseFloat(row.querySelector('.m-can').value) || 0;
+            
+            if(nombreArt && cant > 0) {
+                let item = inventory.find(i => i.nombre === nombreArt);
+                if(!item) {
+                    item = { nombre: nombreArt, saldo: 0 };
+                    inventory.push(item);
+                }
+                
+                if(tipo === 'SALIDA' || tipo === 'PRESTAMO') item.saldo -= cant;
+                else item.saldo += cant;
+                
+                logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: nombreArt, cantidad: cant });
             }
         });
         localStorage.setItem('last_bod', b);
         save();
-        alert("¡Registro Exitoso!");
+        alert("Registro Exitoso. Saldos actualizados.");
         location.reload();
     }
 
-    function addItemManual() {
-        const art = prompt("Nombre del producto:").toUpperCase();
-        const can = parseFloat(prompt("Saldo inicial:")) || 0;
-        if(art) { inventory[art] = can; save(); }
-    }
-
     function save() {
-        localStorage.setItem('vp_saldos_v4', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs_v4', JSON.stringify(logs));
+        localStorage.setItem('vp_inv_v5', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_v5', JSON.stringify(logs));
         actualizarTablas();
     }
 
     function exportarExcel() {
         const wsLogs = XLSX.utils.json_to_sheet(logs);
-        const wsSaldos = XLSX.utils.json_to_sheet(Object.keys(inventory).map(k => ({Producto: k, Saldo: inventory[k]})));
+        const wsSaldos = XLSX.utils.json_to_sheet(inventory);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial");
-        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias");
-        XLSX.writeFile(wb, "Auditoria_Operable_VP.xlsx");
+        XLSX.utils.book_append_sheet(wb, wsLogs, "Historial_Operable");
+        XLSX.utils.book_append_sheet(wb, wsSaldos, "Existencias_Actuales");
+        XLSX.writeFile(wb, "Auditoria_Almacen_VP.xlsx");
     }
 
-    // --- FUNCIONES DE BACKUP ---
+    // --- SISTEMA DE BACKUP ROBUSTO ---
     function exportarBackup() {
-        const data = { inventory, logs };
+        const data = { inv: inventory, hist: logs };
         const blob = new Blob([JSON.stringify(data)], { type: 'text/plain' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Backup_Almacen_VP_${new Date().getTime()}.txt`;
+        a.download = `Backup_VP_${new Date().getTime()}.txt`;
         a.click();
-        alert("Copia de seguridad descargada. Guárdela bien.");
+        alert("Copia de seguridad generada. Guárdela en su correo.");
     }
 
     function restaurarBackup() {
-        const json = prompt("Pegue aquí el contenido del archivo de backup:");
-        if (json) {
-            try {
-                const data = JSON.parse(json);
-                inventory = data.inventory;
-                logs = data.logs;
-                save();
-                alert("Datos restaurados con éxito.");
-            } catch (e) { alert("Error: El formato del backup es inválido."); }
+        const json = prompt("Pegue el contenido del archivo de backup aquí:");
+        if (!json) return;
+        try {
+            const data = JSON.parse(json);
+            inventory = data.inv || [];
+            logs = data.hist || [];
+            save();
+            alert("¡Restauración exitosa!");
+        } catch (e) {
+            alert("Error: El código pegado no es válido.");
         }
     }
 
-    function eliminarLog(idx) { if(confirm("¿Borrar registro?")) { logs.splice(idx, 1); save(); } }
+    function eliminarLog(idx) {
+        if(confirm("¿Borrar este registro?")) { logs.splice(idx, 1); save(); }
+    }
 </script>
 </body>
 </html>

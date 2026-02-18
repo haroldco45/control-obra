@@ -6,22 +6,23 @@
     <title>Auditoría Almacén - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --success: #27ae60; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 50px; }
         header { background: var(--negro); color: var(--oro); padding: 20px; text-align: center; border-bottom: 5px solid var(--oro); }
+        .logo-v { font-size: 10px; letter-spacing: 3px; color: #fff; margin-bottom: 5px; }
         .container { padding: 15px; max-width: 600px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 4px solid var(--oro); }
-        h3 { margin-top: 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 15px; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        h3 { margin-top: 0; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px; color: #444; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .type-btn { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 11px; cursor: pointer; background: #fff; text-align: center; }
         .type-btn.active { background: var(--oro); border-color: var(--oro); font-weight: bold; }
         .item-row { display: flex; gap: 8px; margin-bottom: 8px; }
         .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 18px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
         .btn-sec { background: #e0e0e0; color: #333; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; }
         .informe-seccion { display: none; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; background: white; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 5px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
         canvas { border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 100px; background: #fafafa; }
         footer { text-align: center; font-size: 11px; color: #777; padding: 20px; }
     </style>
@@ -29,73 +30,74 @@
 <body onload="initApp()">
 
 <header>
-    <div style="font-size: 9px; letter-spacing: 2px; color: white;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>CONTROL DE AUDITORÍA</strong>
+    <div class="logo-v">✨ VIBRAS POSITIVAS ✨</div>
+    <strong>LOGÍSTICA Y AUDITORÍA</strong>
+    <div id="fecha-col" style="font-size: 12px; color: #fff; margin-top: 5px;">Cargando hora de Colombia...</div>
 </header>
 
 <div class="container" id="vista-registro">
     <div class="card">
-        <h3>👷 Auditor y Frente</h3>
-        <input type="text" id="responsable" placeholder="Nombre de quien reporta">
-        <input type="text" id="frente" placeholder="Frente de Obra">
+        <h3>👷 Control de Personal</h3>
+        <input type="text" id="entregado_por" placeholder="📦 Entregado por (Bodeguero)">
+        <input type="text" id="recibido_por" placeholder="👷 Recibido por (Operario/Frente)">
+        <input type="text" id="frente" placeholder="📍 Frente de Obra / Destino">
     </div>
 
     <div class="card">
-        <h3>🔄 Operación</h3>
+        <h3>🔄 Operación de Almacén</h3>
         <div class="btn-group">
-            <div class="type-btn active" onclick="setTipo(this, 'SALIDA')">SALIDA</div>
-            <div class="type-btn" onclick="setTipo(this, 'PRESTAMO')">PRÉSTAMO</div>
+            <div class="type-btn active" onclick="setTipo(this, 'SALIDA')">SALIDA / CONSUMO</div>
+            <div class="type-btn" onclick="setTipo(this, 'PRESTAMO')">PRÉSTAMO HERRAMIENTA</div>
             <div class="type-btn" onclick="setTipo(this, 'DEVOLUCION')">DEVOLUCIÓN</div>
-            <div class="type-btn" onclick="setTipo(this, 'AVERIA')">AVERÍA</div>
+            <div class="type-btn" onclick="setTipo(this, 'AVERIA')">AVERÍA / DAÑO</div>
         </div>
         <input type="hidden" id="tipo_mov" value="SALIDA">
     </div>
 
     <div class="card">
-        <h3>📦 Materiales</h3>
+        <h3>📋 Materiales e Insumos</h3>
         <div id="lista-items">
             <div class="item-row">
-                <input type="text" class="in-art" placeholder="Material">
+                <input type="text" class="in-art" placeholder="Descripción">
                 <input type="number" style="width:70px" class="in-can" placeholder="Cant.">
             </div>
         </div>
-        <button class="btn-sec" onclick="addItem()">+ ITEM</button>
+        <button class="btn-sec" onclick="addItem()">+ AGREGAR OTRO ÍTEM</button>
     </div>
 
     <div class="card">
-        <h3>✍️ Firma</h3>
+        <h3>✍️ Firma de Recibido</h3>
         <canvas id="signature-pad"></canvas>
     </div>
 
-    <button class="btn-main" onclick="procesarRegistro()">💾 REGISTRAR Y WHATSAPP</button>
-    <button class="btn-sec" onclick="alternarVistas()">📊 VER INFORMES / EXCEL</button>
+    <button class="btn-main" onclick="procesarRegistro()">💾 REGISTRAR MOVIMIENTO</button>
+    <button class="btn-sec" onclick="alternarVistas()">📊 CONSULTAR INFORMES</button>
 </div>
 
 <div class="container informe-seccion" id="vista-informes">
     <div class="card">
-        <h3>📊 Reportes Acumulados</h3>
+        <h3>📊 Historial de Auditoría</h3>
         <div style="overflow-x: auto;">
             <table id="tabla-logs">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
+                        <th>Fecha/Hora</th>
                         <th>Tipo</th>
-                        <th>Frente</th>
-                        <th>Artículos</th>
+                        <th>Entregó</th>
+                        <th>Recibió</th>
+                        <th>Detalle</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpo-tabla"></tbody>
             </table>
         </div>
-        
-        <button class="btn-main" style="margin-top:20px; background: #27ae60;" onclick="exportarExcel()">📥 DESCARGAR EXCEL (.xlsx)</button>
-        <button class="btn-sec" onclick="alternarVistas()">⬅️ VOLVER</button>
-        <button class="btn-sec" style="color:red;" onclick="borrarDB()">🗑️ BORRAR TODO</button>
+        <button class="btn-main" style="margin-top:20px; background: var(--success);" onclick="exportarExcel()">📥 DESCARGAR EXCEL</button>
+        <button class="btn-sec" onclick="alternarVistas()">⬅️ VOLVER AL REGISTRO</button>
     </div>
 </div>
 
 <footer>
-    LOGÍSTICA DE OBRA CIVIL <br>
+    VALE DE ALMACÉN AUDITABLE <br>
     <strong>DESARROLLADO POR VIBRAS POSITIVAS</strong> © 2026
 </footer>
 
@@ -103,11 +105,22 @@
     let canvas, ctx, drawing = false;
 
     function initApp() {
-        if(localStorage.getItem('resp_saved')) document.getElementById('responsable').value = localStorage.getItem('resp_saved');
+        // Mostrar fecha real de Colombia
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+        
+        if(localStorage.getItem('bodeguero')) document.getElementById('entregado_por').value = localStorage.getItem('bodeguero');
+        
         canvas = document.getElementById('signature-pad');
         ctx = canvas.getContext('2d');
         canvas.width = canvas.offsetWidth;
         setupCanvas();
+    }
+
+    function actualizarReloj() {
+        const ahora = new Date();
+        const opciones = { timeZone: 'America/Bogota', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' };
+        document.getElementById('fecha-col').innerText = ahora.toLocaleString('es-CO', opciones);
     }
 
     function setupCanvas() {
@@ -132,7 +145,7 @@
     function addItem() {
         const div = document.createElement('div');
         div.className = 'item-row';
-        div.innerHTML = `<input type="text" class="in-art" placeholder="Material"><input type="number" style="width:70px" class="in-can" placeholder="Cant.">`;
+        div.innerHTML = `<input type="text" class="in-art" placeholder="Descripción"><input type="number" style="width:70px" class="in-can" placeholder="Cant.">`;
         document.getElementById('lista-items').appendChild(div);
     }
 
@@ -148,67 +161,70 @@
     }
 
     function procesarRegistro() {
-        const resp = document.getElementById('responsable').value;
+        const entrego = document.getElementById('entregado_por').value;
+        const recibio = document.getElementById('recibido_por').value;
         const frente = document.getElementById('frente').value;
         const tipo = document.getElementById('tipo_mov').value;
-        if(!resp || !frente) return alert("Complete los datos básicos.");
+        const fechaHora = document.getElementById('fecha-col').innerText;
 
-        localStorage.setItem('resp_saved', resp);
+        if(!entrego || !recibio || !frente) return alert("Error: Debe indicar quién entrega, quién recibe y el frente.");
 
+        localStorage.setItem('bodeguero', entrego);
+
+        let itemsText = "";
         let itemsArr = [];
         document.querySelectorAll('.item-row').forEach(row => {
             const a = row.querySelector('.in-art').value;
             const c = row.querySelector('.in-can').value;
-            if(a) itemsArr.push(`${a} (${c})`);
+            if(a) {
+                itemsText += `• ${a}: ${c}\n`;
+                itemsArr.push(`${a}(${c})`);
+            }
         });
 
         const log = {
-            fecha: new Date().toLocaleString(),
+            fecha: fechaHora,
             tipo: tipo,
-            auditor: resp,
+            entrego: entrego,
+            recibio: recibio,
             frente: frente,
-            articulos: itemsArr.join(", ")
+            materiales: itemsArr.join(", ")
         };
 
-        let db = JSON.parse(localStorage.getItem('audit_db') || "[]");
+        let db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
         db.unshift(log);
-        localStorage.setItem('audit_db', JSON.stringify(db));
+        localStorage.setItem('audit_db_v2', JSON.stringify(db));
 
-        const msg = `*🛡️ REPORTE ALMACÉN - VIBRAS POSITIVAS*\n📅 FECHA: ${log.fecha}\n👷 AUDITOR: ${resp}\n📍 FRENTE: ${frente}\n📑 TIPO: ${tipo}\n📦 DETALLE: ${log.articulos}`;
+        const msg = `*🛡️ VALE DE ALMACÉN - VIBRAS POSITIVAS*\n` +
+                    `📅 *FECHA:* ${fechaHora}\n` +
+                    `📑 *TIPO:* ${tipo}\n` +
+                    `📦 *ENTREGÓ:* ${entrego}\n` +
+                    `👷 *RECIBIÓ:* ${recibio}\n` +
+                    `📍 *FRENTE:* ${frente}\n` +
+                    `---------------------------\n` +
+                    `*MATERIALES:*\n${itemsText}\n` +
+                    `---------------------------\n` +
+                    `✅ _Registro verificado por Auditoría_`;
+
         window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
     function cargarTabla() {
-        const db = JSON.parse(localStorage.getItem('audit_db') || "[]");
+        const db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
         const cuerpo = document.getElementById('cuerpo-tabla');
         cuerpo.innerHTML = "";
         db.forEach(l => {
-            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.frente}</td><td>${l.articulos}</td></tr>`;
+            cuerpo.innerHTML += `<tr><td>${l.fecha}</td><td>${l.tipo}</td><td>${l.entrego}</td><td>${l.recibio}</td><td>${l.materiales}</td></tr>`;
         });
     }
 
     function exportarExcel() {
-        const db = JSON.parse(localStorage.getItem('audit_db') || "[]");
-        if(db.length === 0) return alert("No hay datos para exportar.");
-
-        try {
-            const worksheet = XLSX.utils.json_to_sheet(db);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
-            
-            // Generar archivo y forzar descarga
-            XLSX.writeFile(workbook, "Reporte_Almacen_VibrasPositivas.xlsx");
-        } catch (e) {
-            alert("Error al generar Excel. Intente desde un navegador como Chrome o Safari.");
-            console.error(e);
-        }
-    }
-
-    function borrarDB() {
-        if(confirm("¿Borrar todo el historial de este teléfono?")) {
-            localStorage.removeItem('audit_db');
-            cargarTabla();
-        }
+        const db = JSON.parse(localStorage.getItem('audit_db_v2') || "[]");
+        if(db.length === 0) return alert("No hay datos.");
+        const ws = XLSX.utils.json_to_sheet(db);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "AuditoriaAlmacen");
+        XLSX.writeFile(wb, "Reporte_Almacen_VibrasPositivas.xlsx");
     }
 </script>
 </body>

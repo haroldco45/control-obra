@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auditoría con Notas - Vibras Positivas</title>
+    <title>Auditoría Bodega - Vibras Positivas</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --azul: #3498db; --verde: #27ae60; }
+        :root { --negro: #1a1a1a; --oro: #f1c40f; --gris: #f4f7f6; --verde: #27ae60; --azul: #3498db; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding-bottom: 60px; }
         header { background: var(--negro); color: var(--oro); padding: 15px; text-align: center; border-bottom: 5px solid var(--oro); }
         .container { padding: 15px; max-width: 650px; margin: auto; }
@@ -14,38 +14,38 @@
         .tab-bar { display: flex; background: #ddd; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
         .tab-btn { flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 11px; }
         .tab-btn.active { background: var(--oro); color: var(--negro); }
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
         .item-row { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
         .btn-main { background: var(--negro); color: var(--oro); border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-        footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
         #alerta-backup { background: #d1ecf1; color: #0c5460; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: center; font-weight: bold; }
+        footer { text-align: center; font-size: 10px; color: #777; padding: 20px; }
     </style>
 </head>
 <body onload="initApp()">
 
 <header>
     <div style="font-size: 9px; letter-spacing: 2px;">✨ VIBRAS POSITIVAS ✨</div>
-    <strong>AUDITORÍA DE OBRA CON NOTAS</strong>
+    <strong>CONTROL DE SALDOS Y AUDITORÍA</strong>
     <div id="reloj-col" style="font-size: 11px; margin-top: 5px; color: #fff;"></div>
 </header>
 
 <div class="container">
     <div id="alerta-backup">
-        📢 SINCRONIZACIÓN PENDIENTE
-        <button onclick="enviarEspejo()" style="margin-top:8px; background:var(--verde); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">ENVIAR ESPEJO AL INGENIERO</button>
+        📢 SINCRONIZACIÓN PENDIENTE (Cada 2 horas)
+        <button onclick="enviarEspejo()" style="margin-top:8px; background:var(--verde); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">ENVIAR ESPEJO AL ING.</button>
     </div>
 
     <div class="tab-bar">
         <button class="tab-btn active" onclick="verTab('movimiento')">REGISTRAR</button>
         <button class="tab-btn" onclick="verTab('inventario')">📦 SALDOS</button>
-        <button class="tab-btn" onclick="verTab('informes')">📊 ESPEJO / NOTAS</button>
+        <button class="tab-btn" onclick="verTab('informes')">📊 HISTORIAL</button>
     </div>
 
     <div id="movimiento" class="tab-content">
         <div class="card">
-            <h3>📝 Vale de Movimiento</h3>
+            <h3>📝 Nuevo Vale</h3>
             <input type="text" id="bodeguero" placeholder="Bodeguero (Entrega)">
             <input type="text" id="receptor" placeholder="Receptor (Recibe)">
             <select id="tipo_mov">
@@ -59,20 +59,20 @@
                     <input type="number" class="m-can" placeholder="Cant.">
                 </div>
             </div>
-            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px;">+ OTRO ÍTEM</button>
-            <textarea id="observaciones" rows="2" placeholder="📝 Notas/Observaciones (Frente de obra, autorizaciones, etc.)" style="margin-top:10px;"></textarea>
+            <button onclick="addFilaMov()" style="width:100%; border:1px dashed #ccc; padding:8px; margin-top:5px;">+ ITEM</button>
+            <textarea id="observaciones" rows="2" placeholder="📝 Observaciones (Ej: Para el frente Torre 1)" style="margin-top:10px;"></textarea>
         </div>
-        <button class="btn-main" onclick="procesarMovimiento()">💾 FINALIZAR REGISTRO</button>
+        <button class="btn-main" onclick="procesarMovimiento()">💾 REGISTRAR MOVIMIENTO</button>
     </div>
 
     <div id="inventario" class="tab-content" style="display:none;">
         <div class="card">
-            <h3>📦 Existencias Actuales</h3>
+            <h3>📦 Existencias en Bodega</h3>
             <table id="tabla-saldos">
-                <thead><tr><th>Producto</th><th>Saldo</th><th>Editar</th></tr></thead>
+                <thead><tr><th>Producto</th><th>Saldo Actual</th><th>Acción</th></tr></thead>
                 <tbody id="cuerpo-saldos"></tbody>
             </table>
-            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="addItemManual()">+ NUEVO ITEM</button>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="crearProductoConSaldo()">+ NUEVO PRODUCTO (CON SALDO)</button>
         </div>
     </div>
 
@@ -81,15 +81,15 @@
             <h3>📊 Espejo de Actividad</h3>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Recibió</th><th>Notas</th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cant.</th><th>Notas</th></tr></thead>
                     <tbody id="cuerpo-logs"></tbody>
                 </table>
             </div>
+            <button class="btn-main" style="margin-top:15px; background:var(--verde);" onclick="exportarExcel()">📥 EXCEL OPERABLE</button>
         </div>
-
         <div class="card">
-            <h3>💾 Sincronización Paralela</h3>
-            <button class="btn-main" style="background:var(--azul);" onclick="enviarEspejo()">📤 ENVIAR ESPEJO COMPLETO</button>
+            <h3>💾 Espejo para el Ingeniero</h3>
+            <button class="btn-main" style="background:var(--azul);" onclick="enviarEspejo()">📤 ENVIAR ESPEJO (BACKUP)</button>
             <button class="btn-main" style="background:#666; margin-top:10px;" onclick="restaurarEspejo()">📥 RESTAURAR ESPEJO</button>
         </div>
     </div>
@@ -98,8 +98,8 @@
 <datalist id="lista-productos"></datalist>
 
 <script>
-    let inventory = JSON.parse(localStorage.getItem('vp_inv_vNotas') || "[]");
-    let logs = JSON.parse(localStorage.getItem('vp_logs_vNotas') || "[]");
+    let inventory = JSON.parse(localStorage.getItem('vp_bodega_vFinal') || "[]");
+    let logs = JSON.parse(localStorage.getItem('vp_logs_vFinal') || "[]");
     let ultimoBackup = Date.now();
 
     function initApp() {
@@ -141,8 +141,23 @@
         const cLogs = document.getElementById('cuerpo-logs');
         cLogs.innerHTML = "";
         logs.forEach(l => {
-            cLogs.innerHTML += `<tr><td>${l.fecha.split(',')[0]}</td><td>${l.tipo}</td><td>${l.producto} (${l.cantidad})</td><td>${l.recibió}</td><td>${l.notas || '-'}</td></tr>`;
+            cLogs.innerHTML += `<tr><td>${l.fecha.split(',')[0]}</td><td>${l.tipo}</td><td>${l.producto}(${l.cantidad})</td><td>${l.recibió}</td><td>${l.notas || ''}</td></tr>`;
         });
+    }
+
+    // --- FUNCIÓN QUE TE GUSTA: CREAR Y PONER SALDO DE UNA VEZ ---
+    function crearProductoConSaldo() {
+        const nombre = prompt("Nombre del Producto:").toUpperCase().trim();
+        if(!nombre) return;
+        const saldo = parseFloat(prompt(`Saldo inicial para ${nombre}:`, 0)) || 0;
+        inventory.push({ nombre: nombre, saldo: saldo });
+        save();
+    }
+
+    function editarArticulo(i) {
+        const n = prompt("Editar nombre:", inventory[i].nombre);
+        const s = prompt("Editar saldo:", inventory[i].saldo);
+        if(n && s) { inventory[i].nombre = n.toUpperCase(); inventory[i].saldo = parseFloat(s); save(); }
     }
 
     function procesarMovimiento() {
@@ -151,10 +166,8 @@
         const tipo = document.getElementById('tipo_mov').value;
         const notas = document.getElementById('observaciones').value;
         const fecha = document.getElementById('reloj-col').innerText;
-        
         if(!b || !r) return alert("Faltan responsables.");
 
-        let procesados = 0;
         document.querySelectorAll('#lista-mov .item-row').forEach(row => {
             const art = row.querySelector('.m-art').value.toUpperCase().trim();
             const can = parseFloat(row.querySelector('.m-can').value) || 0;
@@ -163,51 +176,44 @@
                 if(!item) { item = { nombre: art, saldo: 0 }; inventory.push(item); }
                 if(tipo === 'SALIDA' || tipo === 'PRESTAMO') item.saldo -= can; else item.saldo += can;
                 logs.unshift({ fecha, tipo, entregó: b, recibió: r, producto: art, cantidad: can, notas: notas });
-                procesados++;
             }
         });
-
-        if(procesados > 0) {
-            save();
-            alert("✅ Registro exitoso.");
-            location.reload();
-        }
+        save();
+        alert("✅ Registro exitoso.");
+        location.reload();
     }
 
     function save() {
-        localStorage.setItem('vp_inv_vNotas', JSON.stringify(inventory));
-        localStorage.setItem('vp_logs_vNotas', JSON.stringify(logs));
+        localStorage.setItem('vp_bodega_vFinal', JSON.stringify(inventory));
+        localStorage.setItem('vp_logs_vFinal', JSON.stringify(logs));
         actualizarTablas();
     }
 
     function enviarEspejo() {
         const espejoString = JSON.stringify({ inv: inventory, hist: logs });
-        const msg = `🛡️ *AUDITORÍA COMPLETA - VIBRAS POSITIVAS*\n📅 *Corte:* ${document.getElementById('reloj-col').innerText}\n\nIncluye historial con notas y saldos. Copie este código para su espejo:\n\n${espejoString}`;
+        const msg = `🛡️ *ESPEJO BODEGA - VIBRAS POSITIVAS*\n📅 Corte: ${document.getElementById('reloj-col').innerText}\n\nIngeniero, aquí tiene el historial y saldos actualizados:\n\n${espejoString}`;
         ultimoBackup = Date.now();
         document.getElementById('alerta-backup').style.display = 'none';
         window.location.href = `https://wa.me/573117700431?text=${encodeURIComponent(msg)}`;
     }
 
     function restaurarEspejo() {
-        const json = prompt("INGENIERO: Pegue el código del Espejo aquí:");
+        const json = prompt("Pegue aquí el código del Espejo:");
         if (!json) return;
         try {
             const data = JSON.parse(json);
             inventory = data.inv || [];
             logs = data.hist || [];
             save();
-            alert("✅ Espejo restaurado con éxito.");
-        } catch (e) { alert("Error: Código inválido."); }
+            alert("✅ Espejo restaurado.");
+        } catch (e) { alert("Error de código."); }
     }
 
-    function editarArticulo(i) {
-        const n = prompt("Nombre:", inventory[i].nombre);
-        const s = prompt("Saldo:", inventory[i].saldo);
-        if(n && s) { inventory[i].nombre = n.toUpperCase(); inventory[i].saldo = parseFloat(s); save(); }
-    }
-    function addItemManual() {
-        const n = prompt("Nombre:").toUpperCase();
-        if(n) { inventory.push({nombre:n, saldo:0}); save(); }
+    function exportarExcel() {
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(logs), "Historial_Notas");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(inventory), "Saldos_Actuales");
+        XLSX.writeFile(wb, "Auditoria_VP_Operable.xlsx");
     }
 </script>
 </body>
